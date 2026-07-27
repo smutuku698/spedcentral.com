@@ -8,7 +8,13 @@ import { Image } from "astro:assets";
 import { getFeaturedProviders, getCityBySlug, getServiceCategoryBySlug } from "@/lib/data";
 import { resolveAssetImage } from "@/lib/images";
 
-const featured = getFeaturedProviders(3);
+const featured = await Promise.all(
+  (await getFeaturedProviders(3)).map(async (p) => ({
+    p,
+    city: await getCityBySlug(p.city_slug),
+    category: await getServiceCategoryBySlug(p.category_slugs[0]),
+  })),
+);
 
 // A thin top-edge accent, cycled per card -- a restrained design touch, not
 // a rainbow effect. Reuses the existing muted brand palette so it stays
@@ -25,9 +31,7 @@ const accents = ["bg-brand-orange", "bg-brand-purple", "bg-brand-green", "bg-bra
       <a href="/texas/houston/" class="hidden text-sm font-semibold text-brand-orange hover:underline sm:block">See all Houston providers &rarr;</a>
     </div>
     <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {featured.map((p, i) => {
-        const city = getCityBySlug(p.city_slug);
-        const category = getServiceCategoryBySlug(p.category_slugs[0]);
+      {featured.map(({ p, city, category }, i) => {
         const photo = resolveAssetImage(p.photo_file);
         return (
           <a href={`/texas/houston/providers/${p.slug}/`} class="group overflow-hidden rounded-lg border border-border bg-white shadow-sm transition hover:shadow-md">

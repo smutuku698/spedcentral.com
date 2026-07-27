@@ -7,10 +7,10 @@
 // once there's real content behind it.
 import { getAllServiceCategoryLeaves, getProductCategoryGroups, getCitiesInMetro, getCityBySlug } from "@/lib/data";
 
-const services = getAllServiceCategoryLeaves().slice(0, 12);
-const productGroups = getProductCategoryGroups();
-const houston = getCityBySlug("houston")!;
-const locations = [houston, ...getCitiesInMetro("houston")];
+const services = (await getAllServiceCategoryLeaves()).slice(0, 12);
+const productGroups = await getProductCategoryGroups();
+const houston = (await getCityBySlug("houston"))!;
+const locations = [houston, ...(await getCitiesInMetro("houston"))];
 ---
 <footer class="bg-brand-dark py-14 text-white/80">
   <div class="mx-auto max-w-6xl px-6">

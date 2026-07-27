@@ -17,17 +17,19 @@ const trendingSlugs: { type: "service" | "product"; slug: string }[] = [
   { type: "service", slug: "behavioral-therapist-aba" },
   { type: "service", slug: "dyslexia-reading-specialist" },
   { type: "service", slug: "special-education-advocate" },
-  { type: "product", slug: "sensory-integration-regulation" },
+  { type: "product", slug: "sensory-products" },
 ];
 
-const trending = trendingSlugs.map(({ type, slug }) => {
-  if (type === "service") {
-    const c = getServiceCategoryBySlug(slug)!;
-    return { name: c.name, href: `/texas/houston/${c.slug}/` };
-  }
-  const g = getProductCategoryBySlug(slug)!;
-  return { name: g.name, href: `/products/${g.slug}/` };
-});
+const trending = await Promise.all(
+  trendingSlugs.map(async ({ type, slug }) => {
+    if (type === "service") {
+      const c = (await getServiceCategoryBySlug(slug))!;
+      return { name: c.name, href: `/texas/houston/${c.slug}/` };
+    }
+    const g = (await getProductCategoryBySlug(slug))!;
+    return { name: g.name, href: `/products/${g.slug}/` };
+  }),
+);
 ---
 
 <section class="relative overflow-hidden bg-cream">

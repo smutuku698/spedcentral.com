@@ -6,19 +6,24 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { getActiveServiceCategories, getProvidersByCategoryInMetro, getServiceCategoryBySlug } from "@/lib/data";
 import { breadcrumbJsonLd } from "@/lib/seo";
 
-const categories = getActiveServiceCategories("houston").map((c) => ({
-  ...c,
-  providerCount: getProvidersByCategoryInMetro(c.slug, "houston").length,
-}));
+const activeCategories = await getActiveServiceCategories("houston");
+const categories = await Promise.all(
+  activeCategories.map(async (c) => ({
+    ...c,
+    providerCount: (await getProvidersByCategoryInMetro(c.slug, "houston")).length,
+  })),
+);
 
 // Group headers (e.g. "Medical & Clinical Therapists") for the categories
 // that actually have listings, so the page reads as organized sections
 // rather than one flat grid.
 const groupSlugs = [...new Set(categories.map((c) => c.parent_id!))];
-const groups = groupSlugs.map((slug) => ({
-  group: getServiceCategoryBySlug(slug)!,
-  categories: categories.filter((c) => c.parent_id === slug),
-}));
+const groups = await Promise.all(
+  groupSlugs.map(async (slug) => ({
+    group: (await getServiceCategoryBySlug(slug))!,
+    categories: categories.filter((c) => c.parent_id === slug),
+  })),
+);
 
 const breadcrumbs = breadcrumbJsonLd([{ name: "Home", url: "/" }, { name: "Houston, TX", url: "/texas/houston/" }], Astro.site!);
 ---

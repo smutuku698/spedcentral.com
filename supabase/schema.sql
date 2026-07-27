@@ -372,6 +372,8 @@ create table products (
   short_description    text,
   description          text,
 
+  key_features         text[] not null default '{}', -- short bullet points shown on the product page
+
   price                numeric(8,2),
   sale_price           numeric(8,2),
   currency             text not null default 'USD',
@@ -380,6 +382,12 @@ create table products (
                                                        -- served via a signed URL after payment confirms
 
   image_url            text,
+  -- fallback decorative treatment (lucide icon name + a Tailwind bg color
+  -- class) for products that don't have real photography yet -- e.g. a
+  -- tinted box with a sparkle icon instead of a blank card. Both null once
+  -- image_url is set to a real R2 photo; purely cosmetic, never required.
+  image_icon           text,
+  image_tint           text,
 
   subscription_tier    subscription_tier not null default 'free',
   is_featured          boolean not null default false,
@@ -572,6 +580,24 @@ create policy "public read published product_reviews" on product_reviews for sel
 -- ever as 'draft' or 'pending_review' -- never directly as 'published'
 create policy "public submit provider onboarding" on providers for insert
   with check (status in ('draft', 'pending_review'));
+
+-- the onboarding form also attaches categories/credentials/languages/age
+-- groups/insurances/photos to that same draft row in the same request --
+-- gated identically to the provider row itself (only while unpublished), so
+-- the public API key can never rewrite the taxonomy on an already-published
+-- listing
+create policy "public insert provider_categories while unpublished" on provider_categories for insert
+  with check (exists (select 1 from providers p where p.id = provider_id and p.status in ('draft', 'pending_review')));
+create policy "public insert provider_credentials while unpublished" on provider_credentials for insert
+  with check (exists (select 1 from providers p where p.id = provider_id and p.status in ('draft', 'pending_review')));
+create policy "public insert provider_languages while unpublished" on provider_languages for insert
+  with check (exists (select 1 from providers p where p.id = provider_id and p.status in ('draft', 'pending_review')));
+create policy "public insert provider_age_groups while unpublished" on provider_age_groups for insert
+  with check (exists (select 1 from providers p where p.id = provider_id and p.status in ('draft', 'pending_review')));
+create policy "public insert provider_insurances while unpublished" on provider_insurances for insert
+  with check (exists (select 1 from providers p where p.id = provider_id and p.status in ('draft', 'pending_review')));
+create policy "public insert provider_photos while unpublished" on provider_photos for insert
+  with check (exists (select 1 from providers p where p.id = provider_id and p.status in ('draft', 'pending_review')));
 
 -- leads: insert-only from the public (contact form), no public select
 create policy "public insert provider_leads" on provider_leads for insert with check (true);

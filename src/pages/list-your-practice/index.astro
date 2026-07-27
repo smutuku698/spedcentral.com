@@ -1,0 +1,427 @@
+---
+// Provider self-service onboarding form. Writes straight to Supabase from
+// the browser using the publishable key -- no server route needed, since
+// the RLS policies in supabase/schema.sql already allow a public insert of
+// a 'pending_review' provider (and its category/credential/language/age
+// group/insurance/photo rows) but nothing else. All lookup data below is
+// fetched at BUILD time (this page is static output), so it always matches
+// whatever is actually seeded in Supabase -- no separate copy to keep in
+// sync with supabase/seed_categories.sql / seed_geography.sql.
+import Layout from "@/layouts/Layout.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import { supabase } from "@/lib/supabase";
+
+const { data: allCategories } = await supabase
+  .from("service_categories")
+  .select("id, parent_category_id, name, slug, display_order")
+  .order("display_order");
+const categoryGroups = (allCategories ?? []).filter((c) => !c.parent_category_id);
+const categoryChildren = (groupId: string) =>
+  (allCategories ?? []).filter((c) => c.parent_category_id === groupId);
+
+const { data: cities } = await supabase
+  .from("cities")
+  .select("id, name, is_metro_hub")
+  .order("name");
+
+const { data: credentials } = await supabase
+  .from("credentials")
+  .select("id, name, abbreviation")
+  .order("name");
+
+const { data: languages } = await supabase.from("languages").select("id, name").order("name");
+
+const { data: ageGroups } = await supabase
+  .from("age_groups")
+  .select("id, name, display_order")
+  .order("display_order");
+
+const { data: insurances } = await supabase.from("insurances").select("id, name").order("name");
+
+const PAYMENT_METHODS = [
+  ["cash", "Cash"],
+  ["check", "Check"],
+  ["credit_card", "Credit Card"],
+  ["debit_card", "Debit Card"],
+  ["insurance", "Insurance"],
+  ["sliding_scale", "Sliding Scale Fee"],
+  ["hsa_fsa", "HSA / FSA"],
+  ["financing", "Payment Plans / Financing"],
+];
+
+const PRICE_UNITS = [
+  ["per_hour", "Per Hour"],
+  ["per_session", "Per Session"],
+  ["per_month", "Per Month"],
+  ["per_package", "Per Package"],
+  ["contact_for_pricing", "Contact for Pricing"],
+];
+
+const missingData = !cities?.length || !allCategories?.length;
+---
+<Layout
+  title="List Your Practice | SpedCentral"
+  description="Add your special-education practice to SpedCentral's Houston-area directory. Free to submit -- reviewed before it goes live."
+>
+  <SiteHeader />
+
+  <header class="bg-brand-dark py-12">
+    <div class="mx-auto max-w-3xl px-6 text-center">
+      <h1 class="text-3xl font-bold text-white">List Your Practice</h1>
+      <p class="mt-3 text-sm text-white/80">
+        Get discovered by Houston-area families searching for exactly what you offer. Submissions are reviewed
+        before going live -- usually within 1-2 business days.
+      </p>
+    </div>
+  </header>
+
+  <div class="mx-auto max-w-3xl px-6 py-12">
+    {missingData && (
+      <div class="mb-8 rounded-md border border-brand-orange bg-brand-orange/10 p-4 text-sm text-brand-dark">
+        <strong>Heads up:</strong> reference data (cities/categories) didn't load from Supabase. If you're seeing
+        this during setup, make sure <code>schema.sql</code>, <code>seed_geography.sql</code>, and
+        <code>seed_categories.sql</code> have all been run in the Supabase SQL Editor, then rebuild.
+      </div>
+    )}
+
+    <form id="provider-form" class="space-y-10">
+      <!-- Listing type -->
+      <fieldset class="border-b border-border pb-8">
+        <legend class="text-lg font-bold text-brand-dark">Listing type</legend>
+        <div class="mt-3 flex gap-6 text-sm">
+          <label class="flex items-center gap-2">
+            <input type="radio" name="entity_type" value="individual" checked required /> Individual practitioner
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="radio" name="entity_type" value="company" /> Company / clinic
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- Basic info -->
+      <fieldset class="border-b border-border pb-8">
+        <legend class="text-lg font-bold text-brand-dark">Basic info</legend>
+
+        <label class="mt-4 block text-sm font-semibold text-brand-dark" for="name">Name *</label>
+        <input id="name" name="name" required class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange"
+          placeholder="e.g. Maria Gonzalez, MS, CCC-SLP -- or Bright Path Therapy Group" />
+
+        <label class="mt-4 block text-sm font-semibold text-brand-dark" for="tagline">Tagline *</label>
+        <input id="tagline" name="tagline" required maxlength="120" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange"
+          placeholder="e.g. Warm, play-based speech therapy for toddlers through teens" />
+        <p class="mt-1 text-xs text-muted-foreground">One sentence. This is what shows on your card in search results.</p>
+
+        <label class="mt-4 block text-sm font-semibold text-brand-dark" for="bio">About / Bio *</label>
+        <textarea id="bio" name="bio" required rows="5" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange"
+          placeholder="Example: I'm a bilingual speech-language pathologist with 8 years of experience helping children build confident communication skills. My approach blends play-based therapy with practical strategies families can use at home. I specialize in early language delays, apraxia, and AAC support, and I see clients both in-person in Sugar Land and via teletherapy across Texas."></textarea>
+
+        <label class="mt-4 block text-sm font-semibold text-brand-dark" for="education">Education</label>
+        <input id="education" name="education" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange"
+          placeholder="e.g. M.S. Communication Disorders, University of Houston" />
+
+        <label class="mt-4 block text-sm font-semibold text-brand-dark" for="years_experience">Years of experience</label>
+        <input id="years_experience" name="years_experience" type="number" min="0" max="60" class="mt-1 w-32 rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="8" />
+      </fieldset>
+
+      <!-- Credentials -->
+      <fieldset class="border-b border-border pb-8">
+        <legend class="text-lg font-bold text-brand-dark">Credentials</legend>
+        <p class="mt-1 text-xs text-muted-foreground">Check any that apply -- this is what earns the verified badge.</p>
+        <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {(credentials ?? []).map((c) => (
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="credential_ids" value={c.id} /> {c.abbreviation}
+            </label>
+          ))}
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-brand-dark" for="license_number">License number</label>
+            <input id="license_number" name="license_number" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="e.g. TX-SLP-12345" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-brand-dark" for="license_state">License state</label>
+            <input id="license_state" name="license_state" value="TX" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Contact -->
+      <fieldset class="border-b border-border pb-8">
+        <legend class="text-lg font-bold text-brand-dark">Contact</legend>
+
+        <label class="mt-4 block text-sm font-semibold text-brand-dark" for="submitted_by_email">Your email *</label>
+        <input id="submitted_by_email" name="submitted_by_email" type="email" required class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="you@example.com" />
+        <p class="mt-1 text-xs text-muted-foreground">For our records only -- never shown on your public listing.</p>
+
+        <label class="mt-4 block text-sm font-semibold text-brand-dark" for="email">Public contact email *</label>
+        <input id="email" name="email" type="email" required class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="hello@yourpractice.com" />
+
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-brand-dark" for="phone">Phone</label>
+            <input id="phone" name="phone" type="tel" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="(281) 555-0139" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-brand-dark" for="website_url">Website</label>
+            <input id="website_url" name="website_url" type="url" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="https://yourpractice.com" />
+          </div>
+        </div>
+
+        <details class="mt-4">
+          <summary class="cursor-pointer text-sm font-semibold text-brand-orange">+ Social &amp; video links (optional)</summary>
+          <div class="mt-3 grid grid-cols-2 gap-4">
+            <input name="social_facebook_url" type="url" placeholder="Facebook URL" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+            <input name="social_instagram_url" type="url" placeholder="Instagram URL" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+            <input name="social_linkedin_url" type="url" placeholder="LinkedIn URL" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+            <input name="social_youtube_url" type="url" placeholder="YouTube URL" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+            <input name="intro_video_url" type="url" placeholder="Intro video URL" class="col-span-2 rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+          </div>
+        </details>
+      </fieldset>
+
+      <!-- Location -->
+      <fieldset class="border-b border-border pb-8">
+        <legend class="text-lg font-bold text-brand-dark">Location</legend>
+
+        <label class="mt-4 block text-sm font-semibold text-brand-dark" for="primary_city_id">City *</label>
+        <select id="primary_city_id" name="primary_city_id" required class="mt-1 w-full rounded-md border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-orange">
+          <option value="" disabled selected>Select a city</option>
+          {(cities ?? []).map((c) => <option value={c.id}>{c.name}{c.is_metro_hub ? " (Houston)" : ""}</option>)}
+        </select>
+
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <input name="address_line1" placeholder="Address line 1" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+          <input name="address_line2" placeholder="Address line 2" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+          <input name="postal_code" placeholder="ZIP code" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="accepts_teletherapy" /> Offers teletherapy
+          </label>
+        </div>
+        <p class="mt-1 text-xs text-muted-foreground">Address is optional if you're teletherapy-only -- city is still required so families can find you.</p>
+      </fieldset>
+
+      <!-- Specialties -->
+      <fieldset class="border-b border-border pb-8">
+        <legend class="text-lg font-bold text-brand-dark">Specialties *</legend>
+        <p class="mt-1 text-xs text-muted-foreground">Pick at least one -- these are the categories your listing appears under.</p>
+        <div class="mt-3 space-y-4">
+          {categoryGroups.map((group) => (
+            <div>
+              <p class="text-sm font-semibold text-brand-dark">{group.name}</p>
+              <div class="mt-1 grid grid-cols-2 gap-1 sm:grid-cols-3">
+                {categoryChildren(group.id).map((c) => (
+                  <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="category_ids" value={c.id} /> {c.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </fieldset>
+
+      <!-- Who you work with -->
+      <fieldset class="border-b border-border pb-8">
+        <legend class="text-lg font-bold text-brand-dark">Who you work with</legend>
+
+        <p class="mt-4 text-sm font-semibold text-brand-dark">Age groups</p>
+        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {(ageGroups ?? []).map((a) => (
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="age_group_ids" value={a.id} /> {a.name}
+            </label>
+          ))}
+        </div>
+
+        <p class="mt-4 text-sm font-semibold text-brand-dark">Languages spoken</p>
+        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {(languages ?? []).map((l) => (
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="language_ids" value={l.id} /> {l.name}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <!-- Pricing & payment -->
+      <fieldset class="border-b border-border pb-8">
+        <legend class="text-lg font-bold text-brand-dark">Pricing &amp; payment</legend>
+
+        <div class="mt-4 grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-brand-dark" for="price_min">Price from ($)</label>
+            <input id="price_min" name="price_min" type="number" min="0" step="0.01" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="80" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-brand-dark" for="price_max">Price to ($)</label>
+            <input id="price_max" name="price_max" type="number" min="0" step="0.01" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="150" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-brand-dark" for="price_unit">Unit</label>
+            <select id="price_unit" name="price_unit" class="mt-1 w-full rounded-md border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-orange">
+              {PRICE_UNITS.map(([value, label]) => <option value={value}>{label}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <p class="mt-4 text-sm font-semibold text-brand-dark">Payment methods accepted</p>
+        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {PAYMENT_METHODS.map(([value, label]) => (
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="payment_methods" value={value} /> {label}
+            </label>
+          ))}
+        </div>
+
+        <p class="mt-4 text-sm font-semibold text-brand-dark">Insurance accepted</p>
+        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {(insurances ?? []).map((i) => (
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="insurance_ids" value={i.id} /> {i.name}
+            </label>
+          ))}
+        </div>
+
+        <label class="mt-4 flex items-center gap-2 text-sm">
+          <input type="checkbox" name="accepting_new_clients" checked /> Currently accepting new clients
+        </label>
+      </fieldset>
+
+      <!-- Photos -->
+      <fieldset class="border-b border-border pb-8">
+        <legend class="text-lg font-bold text-brand-dark">Photos</legend>
+        <input type="file" name="photos" accept="image/*" multiple class="mt-3 block w-full text-sm" />
+        <p class="mt-2 text-xs text-muted-foreground">
+          Online photo upload is being finalized. Your selected files won't be uploaded automatically yet --
+          once you submit, email 2-3 photos (headshot + workspace) to
+          <a href="mailto:providers@spedcentral.com" class="text-brand-orange hover:underline">providers@spedcentral.com</a>
+          referencing your practice name, and we'll add them during review.
+        </p>
+      </fieldset>
+
+      <div id="form-status" class="hidden rounded-md p-4 text-sm"></div>
+
+      <button id="submit-btn" type="submit" class="w-full rounded-md bg-brand-orange px-6 py-3 font-semibold text-white hover:opacity-90 disabled:opacity-50">
+        Submit for review
+      </button>
+      <p class="text-center text-xs text-muted-foreground">
+        Submitting doesn't publish you immediately -- listings are reviewed within 1-2 business days.
+      </p>
+    </form>
+  </div>
+
+  <SiteFooter />
+
+  <script>
+    import { supabase } from "@/lib/supabase";
+
+    const form = document.getElementById("provider-form") as HTMLFormElement;
+    const statusBox = document.getElementById("form-status") as HTMLDivElement;
+    const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+
+    function slugify(text: string) {
+      return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+    }
+
+    function showStatus(kind: "error" | "success", message: string) {
+      statusBox.textContent = message;
+      statusBox.className = kind === "error"
+        ? "rounded-md p-4 text-sm bg-red-50 text-red-800 border border-red-200"
+        : "rounded-md p-4 text-sm bg-brand-green/10 text-brand-dark border border-brand-green";
+      statusBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    // Real upload wiring lands once the R2 bucket + a presigned-URL endpoint
+    // exist (see supabase/db-reference.json -> image_fields_for_r2_planning,
+    // and the r2-image-key-convention memory: store the object KEY, e.g.
+    // providers/{providerId}/gallery/{n}.jpg, not a full URL). This is the
+    // single spot that needs filling in later -- nothing else in this form
+    // has to change.
+    async function uploadPhotosToR2(_files: File[], _providerId: string): Promise<string[]> {
+      return [];
+    }
+
+    async function insertJoinRows(table: string, ids: FormDataEntryValue[], providerId: string, fk: string) {
+      if (!ids.length) return;
+      const { error } = await supabase.from(table).insert(ids.map((id) => ({ provider_id: providerId, [fk]: id })));
+      if (error) throw error;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+      statusBox.classList.add("hidden");
+
+      try {
+        const fd = new FormData(form);
+        const name = String(fd.get("name") ?? "").trim();
+        const providerId = crypto.randomUUID();
+        const slug = `${slugify(name)}-${providerId.slice(0, 6)}`;
+
+        const categoryIds = fd.getAll("category_ids");
+        if (categoryIds.length === 0) throw new Error("Pick at least one specialty before submitting.");
+
+        const num = (key: string) => (fd.get(key) ? Number(fd.get(key)) : null);
+        const str = (key: string) => (fd.get(key) ? String(fd.get(key)) : null);
+
+        const { error: providerError } = await supabase.from("providers").insert({
+          id: providerId,
+          entity_type: fd.get("entity_type"),
+          status: "pending_review",
+          name,
+          slug,
+          tagline: fd.get("tagline"),
+          bio: fd.get("bio"),
+          education: str("education"),
+          years_experience: num("years_experience"),
+          license_number: str("license_number"),
+          license_state: str("license_state"),
+          phone: str("phone"),
+          email: fd.get("email"),
+          website_url: str("website_url"),
+          social_facebook_url: str("social_facebook_url"),
+          social_instagram_url: str("social_instagram_url"),
+          social_linkedin_url: str("social_linkedin_url"),
+          social_youtube_url: str("social_youtube_url"),
+          intro_video_url: str("intro_video_url"),
+          address_line1: str("address_line1"),
+          address_line2: str("address_line2"),
+          primary_city_id: fd.get("primary_city_id"),
+          postal_code: str("postal_code"),
+          accepts_teletherapy: fd.get("accepts_teletherapy") === "on",
+          price_min: num("price_min"),
+          price_max: num("price_max"),
+          price_unit: fd.get("price_unit") || null,
+          payment_methods: fd.getAll("payment_methods"),
+          accepting_new_clients: fd.get("accepting_new_clients") === "on",
+          submitted_by_email: fd.get("submitted_by_email"),
+        });
+        if (providerError) throw providerError;
+
+        await insertJoinRows("provider_categories", categoryIds, providerId, "category_id");
+        await insertJoinRows("provider_credentials", fd.getAll("credential_ids"), providerId, "credential_id");
+        await insertJoinRows("provider_languages", fd.getAll("language_ids"), providerId, "language_id");
+        await insertJoinRows("provider_age_groups", fd.getAll("age_group_ids"), providerId, "age_group_id");
+        await insertJoinRows("provider_insurances", fd.getAll("insurance_ids"), providerId, "insurance_id");
+
+        const photos = (fd.getAll("photos") as File[]).filter((f) => f.size > 0);
+        if (photos.length) await uploadPhotosToR2(photos, providerId);
+
+        form.classList.add("hidden");
+        showStatus(
+          "success",
+          "Thanks! Your listing was submitted for review. We'll email you within 1-2 business days once it's live. " +
+            (photos.length ? "Don't forget to send your photos to providers@spedcentral.com in the meantime." : ""),
+        );
+      } catch (err) {
+        showStatus("error", err instanceof Error ? err.message : "Something went wrong -- please try again or email providers@spedcentral.com.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit for review";
+      }
+    });
+  </script>
+</Layout>

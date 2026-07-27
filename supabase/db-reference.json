@@ -1,0 +1,204 @@
+{
+  "_purpose": "Human/AI-readable backup of what supabase/schema.sql + seed_categories.sql define. Not read by the app -- schema.sql is the source of truth. Regenerate this by hand if the schema changes materially.",
+  "database_purpose": {
+    "summary": "Powers two public directories on SpedCentral (special-education providers, and a products marketplace) plus the shared taxonomy both use for filtering/URLs.",
+    "domains": [
+      {
+        "name": "providers",
+        "what_it_is": "Directory of SPED specialists/companies (therapists, tutors, advocates, etc.) that parents search by state/city/category. Has an onboarding + moderation workflow (draft -> pending_review -> published/rejected/suspended).",
+        "monetization": "subscription_tier (free/basic/premium) + is_featured/featured_rank for paid placement; provider_leads captures the actual contact-form conversions."
+      },
+      {
+        "name": "products",
+        "what_it_is": "Marketplace of assistive tech / sensory tools / printables. Two flavors via product_type: 'affiliate' (redirect to buy_url, no payment handling) and 'digital_download' (sold on-site, you take a cut, payout via Stripe Connect).",
+        "monetization": "product_orders records the money movement for digital_download sales only."
+      },
+      {
+        "name": "shared reference data",
+        "what_it_is": "states, cities, languages, age_groups, environments, credentials, insurances -- lookup tables both domains filter/tag against, never joined to each other directly."
+      }
+    ],
+    "deliberately_not_in_db": "Editorial content (guides, IEP help, glossary) -- lives as Markdown/MDX in Astro content collections instead, not a table. See bottom of schema.sql for why."
+  },
+
+  "enums": {
+    "listing_status": ["draft", "pending_review", "published", "rejected", "suspended"],
+    "subscription_tier": ["free", "basic", "premium"],
+    "provider_entity_type": ["individual", "company"],
+    "price_unit": ["per_hour", "per_session", "per_month", "per_package", "contact_for_pricing"],
+    "payment_method_type": ["cash", "check", "credit_card", "debit_card", "insurance", "sliding_scale", "hsa_fsa", "financing"],
+    "product_type": ["affiliate", "digital_download"],
+    "order_status": ["pending", "paid", "refunded", "failed"]
+  },
+
+  "tables": {
+    "states": {
+      "purpose": "One row per US state, drives /texas/ style URLs.",
+      "columns": ["id (uuid, pk)", "name", "abbreviation (unique)", "slug (unique)", "meta_title", "meta_description"]
+    },
+    "cities": {
+      "purpose": "Cities within a state; self-referencing metro_id lets a suburb (Sugar Land) point at its metro hub (Houston).",
+      "columns": ["id (uuid, pk)", "state_id (fk states)", "name", "slug", "is_metro_hub (bool)", "metro_id (fk cities, nullable)", "latitude", "longitude", "meta_title", "meta_description"]
+    },
+    "languages": {
+      "purpose": "Languages a provider speaks / product is available in.",
+      "columns": ["id (uuid, pk)", "name", "code (ISO 639-1, unique)", "slug (unique)"]
+    },
+    "age_groups": {
+      "purpose": "Shared age-range taxonomy for both providers and products.",
+      "columns": ["id (uuid, pk)", "name", "slug (unique)", "min_age", "max_age", "display_order"],
+      "seeded_values": ["early-intervention-0-3", "preschool-3-5", "elementary-6-11", "adolescent-12-17", "adult-18-plus"]
+    },
+    "environments": {
+      "purpose": "Where a product is used (Home/School/etc.) -- products-domain only, orthogonal to product_categories.",
+      "columns": ["id (uuid, pk)", "name", "slug (unique)", "display_order"],
+      "seeded_values": ["home", "school-classroom", "therapy-clinic", "community-outdoors", "workplace"]
+    },
+    "credentials": {
+      "purpose": "Professional certifications a provider can hold (BCBA, OTR/L, etc.).",
+      "columns": ["id (uuid, pk)", "name", "abbreviation (unique)", "slug (unique)", "description"],
+      "seeded_count": 16
+    },
+    "insurances": {
+      "purpose": "Payers a provider accepts.",
+      "columns": ["id (uuid, pk)", "name", "slug (unique)"],
+      "seeded_count": 10
+    },
+
+    "service_categories": {
+      "purpose": "Provider-domain taxonomy. Two-level: 7 top-level groups (nav/mega-menu) each with specific specialist types (the actual filter/URL slugs, e.g. /texas/houston/speech-language-pathologist/).",
+      "columns": ["id (uuid, pk)", "parent_category_id (fk self, nullable)", "name", "slug (unique)", "short_description", "icon (lucide icon name)", "display_order", "meta_title", "meta_description"],
+      "seeded_top_level_groups": [
+        "medical-clinical-therapists (13 children, e.g. speech-language-pathologist, occupational-therapist, behavioral-therapist-aba)",
+        "academic-school-based-specialists (8 children, e.g. special-education-tutor, dyslexia-reading-specialist)",
+        "legal-advocacy-family-support (5 children, e.g. special-education-advocate, special-education-attorney)",
+        "early-intervention-childcare (3 children)",
+        "adult-transition-services (4 children)",
+        "recreation-community (4 children)",
+        "facilities-programs (3 children)"
+      ]
+    },
+    "providers": {
+      "purpose": "Core listing row -- one per specialist or company.",
+      "columns": {
+        "identity": ["id (uuid, pk)", "parent_provider_id (fk self, nullable -- staff under a company)", "entity_type (enum)", "status (enum, default draft)", "name", "slug (unique)", "tagline", "bio", "education (free text)", "years_experience"],
+        "trust": ["license_number", "license_state", "is_verified (bool)", "verified_at", "accepting_new_clients (bool)"],
+        "contact": ["phone", "email", "website_url", "social_facebook_url", "social_instagram_url", "social_linkedin_url", "social_youtube_url", "intro_video_url"],
+        "location": ["address_line1", "address_line2", "primary_city_id (fk cities)", "postal_code", "latitude", "longitude", "accepts_teletherapy (bool)"],
+        "pricing": ["price_min", "price_max", "price_unit (enum)", "payment_methods (enum array)"],
+        "media_IMAGE_FIELDS": ["photo_url (text -- hero photo/logo, R2 URL)", "logo_url (text -- companies only, R2 URL)"],
+        "monetization": ["subscription_tier (enum)", "is_featured (bool)", "featured_rank"],
+        "ratings_denormalized": ["rating_avg", "review_count (kept in sync by refresh_provider_rating() trigger)"],
+        "seo": ["meta_title", "meta_description"],
+        "internal_only_not_in_public_providers_view": ["submitted_by_email", "admin_notes"],
+        "timestamps": ["created_at", "updated_at (auto via trigger)"]
+      },
+      "public_read_surface": "public_providers view -- same columns minus submitted_by_email/admin_notes, filtered to status='published'"
+    },
+    "provider_hours": {
+      "purpose": "Weekly open hours, one row per day.",
+      "columns": ["id", "provider_id (fk)", "day_of_week (0=Sunday..6)", "opens_at", "closes_at", "is_closed"]
+    },
+    "provider_photos": {
+      "purpose": "Gallery images (multiple per provider), separate from the single hero photo_url on providers.",
+      "columns_IMAGE_TABLE": ["id (uuid, pk)", "provider_id (fk)", "url (text, R2 URL)", "alt_text", "display_order"]
+    },
+    "provider_categories / provider_locations / provider_credentials / provider_languages / provider_age_groups / provider_insurances": {
+      "purpose": "Plain join tables (provider_id, <lookup>_id) linking providers to the reference tables above. No extra columns.",
+      "note": "6 tables, one per relationship, all cascade-delete with the provider."
+    },
+    "provider_reviews": {
+      "purpose": "Star ratings + text, feeds the rating_avg/review_count on providers via trigger.",
+      "columns": ["id", "provider_id (fk)", "author_name", "rating (1-5)", "body", "is_published (bool)", "created_at"]
+    },
+    "provider_leads": {
+      "purpose": "The actual revenue event: visitor -> provider contact-form submissions. Public insert-only, no public read.",
+      "columns": ["id", "provider_id (fk)", "name", "email", "phone", "message", "source_page", "created_at"]
+    },
+
+    "product_categories": {
+      "purpose": "Products-domain taxonomy. 4 top-level groups by need (not product type), each with specific sub-categories.",
+      "columns": ["id (uuid, pk)", "parent_category_id (fk self, nullable)", "name", "slug (unique)", "short_description", "icon", "display_order", "meta_title", "meta_description"],
+      "seeded_top_level_groups": [
+        "sensory-integration-regulation (3 children)",
+        "assistive-technology-communication (6 children)",
+        "adaptive-classroom-learning-tools (3 children, incl. digital-downloads-printables)",
+        "daily-living-independent-skills (7 children)"
+      ]
+    },
+    "creators": {
+      "purpose": "People/studios selling digital_download products only (not used for affiliate products). Payout destination for Stripe Connect.",
+      "columns": ["id", "name", "slug (unique)", "email", "bio", "stripe_connect_account_id", "commission_percent (default 30.0)", "is_active", "created_at"],
+      "public_read_surface": "public_creators view -- name/slug/bio/created_at only, omits email + stripe_connect_account_id",
+      "note_no_image_field": "No avatar/logo column exists yet for creators -- add one later (creators.avatar_url) if the creator marketplace needs a byline photo."
+    },
+    "products": {
+      "purpose": "Core listing row -- one per product (affiliate or digital_download).",
+      "columns": {
+        "identity": ["id (uuid, pk)", "related_provider_id (fk providers, nullable, optional cross-link)", "creator_id (fk creators, nullable, digital_download only)", "status (enum)", "product_type (enum)", "name", "slug (unique)", "brand", "short_description", "description"],
+        "pricing": ["price", "sale_price", "currency (default USD)", "buy_url (affiliate only, rendered nofollow)", "digital_file_url (digital_download only -- never public, served via signed URL post-payment)"],
+        "media_IMAGE_FIELD": ["image_url (text -- single hero image, R2 URL)"],
+        "monetization": ["subscription_tier (enum)", "is_featured (bool)", "featured_rank"],
+        "ratings_denormalized": ["rating_avg", "review_count (trigger-synced)"],
+        "seo": ["meta_title", "meta_description"],
+        "internal_only_not_in_public_products_view": ["submitted_by_email", "admin_notes"],
+        "timestamps": ["created_at", "updated_at"]
+      },
+      "public_read_surface": "public_products view -- filtered to status='published'"
+    },
+    "product_photos": {
+      "purpose": "Gallery images (multiple per product), separate from the single hero image_url on products.",
+      "columns_IMAGE_TABLE": ["id (uuid, pk)", "product_id (fk)", "url (text, R2 URL)", "alt_text", "display_order"]
+    },
+    "product_category_links / product_age_groups / product_environments": {
+      "purpose": "Join tables linking products to product_categories / age_groups / environments.",
+      "note": "product_category_links allows a product in multiple categories at once (deliberate)."
+    },
+    "product_reviews": {
+      "purpose": "Star ratings + text, feeds rating_avg/review_count via trigger.",
+      "columns": ["id", "product_id (fk)", "author_name", "rating (1-5)", "body", "is_published", "created_at"]
+    },
+    "product_orders": {
+      "purpose": "digital_download purchase/money-movement records. Written server-side only via service_role after Stripe webhook confirms -- no public RLS policies at all.",
+      "columns": ["id", "product_id (fk)", "creator_id (fk)", "buyer_email", "buyer_name", "amount", "currency", "platform_fee_amount", "creator_payout_amount", "stripe_payment_intent_id (unique)", "status (enum)", "created_at"]
+    }
+  },
+
+  "image_fields_for_r2_planning": {
+    "note": "Every image column below is a plain `text` column storing a URL string -- schema.sql already comments photo_url/logo_url/image_url as 'Cloudflare R2 URL', so no schema change is needed to start using R2. The only decision left is WHAT to store in that text column.",
+    "columns": [
+      { "table": "providers", "column": "photo_url", "cardinality": "one", "meaning": "hero photo (individual) or logo (company, if logo_url unused)" },
+      { "table": "providers", "column": "logo_url", "cardinality": "one", "meaning": "company logo, companies only" },
+      { "table": "provider_photos", "column": "url", "cardinality": "many (gallery)", "has": "alt_text + display_order columns alongside it" },
+      { "table": "products", "column": "image_url", "cardinality": "one", "meaning": "hero product image" },
+      { "table": "product_photos", "column": "url", "cardinality": "many (gallery)", "has": "alt_text + display_order columns alongside it" }
+    ],
+    "decision_STATUS": "DECIDED 2026-07-27 -- going with key-only storage (option B). Do not revisit unless a real problem comes up.",
+    "decided_convention": {
+      "what_gets_stored_in_the_db_column": "Just the object key/path, e.g. providers/<provider_id>/hero.jpg -- NOT a full https:// URL.",
+      "how_the_full_url_is_built": "At render time, prefix the stored key with one env var (PUBLIC_R2_BASE_URL, e.g. https://images.spedcentral.com/ or the R2.dev public URL) to get the real <img src>. Not implemented yet -- add a small helper (e.g. src/lib/images.ts: `r2Url(key)`) once the R2 bucket actually exists.",
+      "why": "Provider/product UUID is already the natural, permanent key -- 'hero profile by key id' as you said. If the bucket, custom domain, or CDN ever changes, you update PUBLIC_R2_BASE_URL once instead of rewriting every photo_url/image_url row in the database.",
+      "key_naming": {
+        "providers.photo_url": "providers/{provider_id}/hero.jpg",
+        "providers.logo_url": "providers/{provider_id}/logo.jpg",
+        "provider_photos.url": "providers/{provider_id}/gallery/{n}.jpg",
+        "products.image_url": "products/{product_id}/hero.jpg",
+        "product_photos.url": "products/{product_id}/gallery/{n}.jpg"
+      }
+    },
+    "not_yet_wired": "src/lib/images.ts currently resolves LOCAL build-time assets from src/assets/ by filename (for placeholder/seed data) -- unrelated to and will not be used once real photo_url/image_url columns hold R2 URLs. That helper can stay for any hand-picked editorial images but real listing photos will just be <img src={row.photo_url}> once R2 is wired."
+  },
+
+  "row_level_security_summary": {
+    "public_can_read": "all reference/lookup tables, published providers/products (via base table policies + public_* views), published reviews",
+    "public_can_insert_only": ["providers (forced to draft/pending_review status)", "provider_leads"],
+    "no_public_access_at_all": ["creators (public reads go through public_creators view instead)", "product_orders (service_role only)"],
+    "admin_actions": "Approve/reject/suspend/delete and all edits to already-published listings happen through the service_role key from a protected server-side route -- bypasses RLS entirely. That key now lives in .env as SUPABASE_SECRET_KEY, unused until that route exists."
+  },
+
+  "open_items_not_blocking_schema_run": [
+    "No users/profiles table yet linking a future Clerk login to a providers row -- add when the provider-submission/login feature is actually built (tracked in project memory as deferred).",
+    "creators table has no avatar/photo column -- add later if needed, trivial ALTER TABLE, zero rows exist yet so no migration risk.",
+    "Decide full-URL vs key-only storage for image columns (see image_fields_for_r2_planning above) before the first real photo upload -- doesn't require a schema change either way, just a convention to commit to."
+  ]
+}

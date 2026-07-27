@@ -18,16 +18,22 @@ import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/seo";
 // getActiveServiceCategories() is the same function the homepage category
 // bar and footer use, so this list can never drift out of sync with what's
 // actually linked elsewhere on the site.
-export function getStaticPaths() {
-  return getActiveServiceCategories("houston").map((c) => ({
-    params: { category: c.slug },
-    props: { providers: getProvidersByCategoryInMetro(c.slug, "houston") },
-  }));
+export async function getStaticPaths() {
+  const categories = await getActiveServiceCategories("houston");
+  return Promise.all(
+    categories.map(async (c) => ({
+      params: { category: c.slug },
+      props: { providers: await getProvidersByCategoryInMetro(c.slug, "houston") },
+    })),
+  );
 }
 
 const { category: categorySlug } = Astro.params;
 const { providers } = Astro.props;
-const category = getServiceCategoryBySlug(categorySlug!)!;
+const category = (await getServiceCategoryBySlug(categorySlug!))!;
+const providerCards = await Promise.all(
+  providers.map(async (p) => ({ p, city: await getCityBySlug(p.city_slug) })),
+);
 const faqs = getServiceCategoryFaqs(category.slug);
 // Strip parentheticals like "(ABA / BCBA / RBT)" for the <title> tag --
 // full name still displays in the on-page H1, but titles need to fit
@@ -72,8 +78,7 @@ const providerList = itemListJsonLd(
 
   <div class="mx-auto max-w-6xl px-6 py-12">
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {providers.map((p) => {
-        const city = getCityBySlug(p.city_slug);
+      {providerCards.map(({ p, city }) => {
         const photo = resolveAssetImage(p.photo_file);
         return (
           <a href={`/texas/houston/providers/${p.slug}/`} class="group overflow-hidden rounded-lg border border-border bg-white shadow-sm transition hover:shadow-md">

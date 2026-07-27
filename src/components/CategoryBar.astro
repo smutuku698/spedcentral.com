@@ -6,7 +6,7 @@
 // dedicated hub page built until there's real content behind it.
 import { getServiceCategoryGroups } from "@/lib/data";
 
-const groups = getServiceCategoryGroups();
+const groups = await getServiceCategoryGroups();
 ---
 <section class="border-b border-border bg-white py-10">
   <div class="mx-auto max-w-6xl px-6 text-center">

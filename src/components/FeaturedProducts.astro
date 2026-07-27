@@ -6,8 +6,10 @@ import { Star, Download } from "lucide-react";
 import { getFeaturedProducts, getProductCategoryGroups, getProductCategoryBySlug } from "@/lib/data";
 import { productIcons } from "@/lib/icons";
 
-const productGroups = getProductCategoryGroups();
-const featured = getFeaturedProducts(4);
+const productGroups = await getProductCategoryGroups();
+const featured = await Promise.all(
+  (await getFeaturedProducts(4)).map(async (p) => ({ p, category: await getProductCategoryBySlug(p.category_slugs[0]) })),
+);
 
 // Same restrained top-edge accent system as FeaturedProviders -- reused
 // on purpose, so both grids read as one consistent design system.
@@ -32,9 +34,8 @@ const accents = ["bg-brand-orange", "bg-brand-purple", "bg-brand-green", "bg-bra
     </div>
 
     <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {featured.map((p, i) => {
+      {featured.map(({ p, category }, i) => {
         const Icon = productIcons[p.image_icon];
-        const category = getProductCategoryBySlug(p.category_slugs[0]);
         return (
           <a href={`/products/item/${p.slug}/`} class="group flex flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm transition hover:shadow-md">
             <div class={`h-[3px] w-full ${accents[i % accents.length]}`}></div>

@@ -15,19 +15,23 @@ import {
 import { resolveAssetImage } from "@/lib/images";
 import { breadcrumbJsonLd, schemaTypeForGroup, openingHoursSpecification } from "@/lib/seo";
 
-export function getStaticPaths() {
-  return getPublishedProviders().map((provider) => ({ params: { slug: provider.slug }, props: { provider } }));
+export async function getStaticPaths() {
+  const providers = await getPublishedProviders();
+  return providers.map((provider) => ({ params: { slug: provider.slug }, props: { provider } }));
 }
 
 const { provider } = Astro.props;
-const city = getCityBySlug(provider.city_slug)!;
-const category = getServiceCategoryBySlug(provider.category_slugs[0])!;
-const credentials = getCredentialsBySlugs(provider.credential_slugs);
-const languages = getLanguagesBySlugs(provider.language_slugs);
-const insurances = getInsurancesBySlugs(provider.insurance_slugs);
-const ageGroups = getAgeGroupsBySlugs(provider.age_group_slugs);
-const reviews = getProviderReviews(provider.id);
-const related = getRelatedProviders(provider);
+const city = (await getCityBySlug(provider.city_slug))!;
+const category = (await getServiceCategoryBySlug(provider.category_slugs[0]))!;
+const credentials = await getCredentialsBySlugs(provider.credential_slugs);
+const languages = await getLanguagesBySlugs(provider.language_slugs);
+const insurances = await getInsurancesBySlugs(provider.insurance_slugs);
+const ageGroups = await getAgeGroupsBySlugs(provider.age_group_slugs);
+const reviews = await getProviderReviews(provider.id);
+const relatedProviders = await getRelatedProviders(provider);
+const related = await Promise.all(
+  relatedProviders.map(async (p) => ({ p, city: await getCityBySlug(p.city_slug) })),
+);
 const faqs = getServiceCategoryFaqs(category.slug);
 const hours = formatHours(provider.hours);
 const photo = resolveAssetImage(provider.photo_file);
@@ -189,8 +193,7 @@ const breadcrumbs = breadcrumbJsonLd(
         <section>
           <h2 class="text-xl font-bold text-brand-dark">Other {category.name}s in the Houston area</h2>
           <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {related.map((p) => {
-              const relCity = getCityBySlug(p.city_slug);
+            {related.map(({ p, city: relCity }) => {
               return (
                 <a href={`/texas/houston/providers/${p.slug}/`} class="rounded-lg border border-border p-4 hover:border-brand-orange">
                   <p class="font-bold text-brand-dark">{p.name}</p>

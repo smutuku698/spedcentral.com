@@ -192,63 +192,127 @@ on conflict (slug) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- PRODUCT CATEGORIES (tools/gadgets marketplace)
--- Four top-level groups matching how parents/teachers actually search --
--- by sensory need, communication need, classroom utility, or daily-living
--- skill -- not by product type. Tag every product with Category (what it
--- does) + Environment (Home/School/etc., above) + Age Group so a teacher
--- can filter to exactly "School" items and a parent to "Home" items from
--- the same catalog.
+-- Nine top-level groups, deliberately matching the proven nav structure of
+-- an established autism-products competitor (researched via their sitemap)
+-- so the taxonomy matches how parents/teachers already expect this kind of
+-- catalog to be organized. Two of their sub-categories were intentionally
+-- left out: "Supplements" (unregulated health claims -- a common source of
+-- misinformation aimed at autism parents, and off-brand for a site built on
+-- verified/trustworthy positioning) and "Autism Awareness" merch (fine for
+-- a pure e-commerce store, off-brand for a clinical-feeling directory).
+-- Tag every product with Category (what it does) + Environment (Home/
+-- School/etc., above) + Age Group so a teacher can filter to exactly
+-- "School" items and a parent to "Home" items from the same catalog.
 -- ---------------------------------------------------------------------------
 insert into product_categories (name, slug, icon, display_order) values
-  ('Sensory Integration & Regulation', 'sensory-integration-regulation', 'sparkles', 10),
-  ('Assistive Technology & Communication', 'assistive-technology-communication', 'message-circle', 20),
-  ('Adaptive Classroom & Learning Tools', 'adaptive-classroom-learning-tools', 'presentation', 30),
-  ('Daily Living & Independent Skills', 'daily-living-independent-skills', 'home', 40)
+  ('Sensory Products', 'sensory-products', 'sparkles', 10),
+  ('Communication & Language', 'communication-language', 'message-circle', 20),
+  ('Fine & Gross Motor Skills', 'fine-gross-motor-skills', 'activity', 30),
+  ('Behavior & Social Skills', 'behavior-social-skills', 'heart-handshake', 40),
+  ('Daily Living & Self-Care', 'daily-living-self-care', 'home', 50),
+  ('Learning & Education', 'learning-education', 'graduation-cap', 60),
+  ('Sleep & Relaxation', 'sleep-relaxation', 'moon', 70),
+  ('Therapy Tools', 'therapy-tools', 'stethoscope', 80),
+  ('Toys, Games & Fidgets', 'toys-games-fidgets', 'puzzle', 90)
 on conflict (slug) do nothing;
 
--- children: Sensory Integration & Regulation
+-- children: Sensory Products
 insert into product_categories (parent_category_id, name, slug, short_description, display_order)
 select id, v.name, v.slug, v.descr, v.ord from product_categories, (values
-  ('Calming & Deep Pressure', 'calming-deep-pressure', 'Weighted vests, weighted blankets, compression sheets, sensory swings', 1),
+  ('Calming & Deep Pressure', 'calming-deep-pressure', 'Weighted vests, weighted blankets, compression sheets', 1),
   ('Movement & Active Seating', 'movement-active-seating', 'Wobble stools, balance balls, fidget chair bands, therapy wedges, standing desks', 2),
-  ('Fidgets & Oral Motor', 'fidgets-oral-motor', 'Chewelry, textured handheld fidgets, stress balls, noise-cancelling headphones', 3)
+  ('Oral Motor Tools', 'oral-motor-tools', 'Chewelry, oral massagers, textured chew tools', 3),
+  ('Sensory Swings', 'sensory-swings', 'Platform, cocoon, and pod swings for home or a sensory room', 4),
+  ('Sensory Room Equipment', 'sensory-room-equipment', 'Bubble tubes, projectors, crash pads, larger sensory-room installations', 5),
+  ('Stimulation Tools', 'stimulation-tools', 'Tactile, visual, and auditory stimulation tools', 6),
+  ('Ear Muffs & Auditory Sensitivity', 'ear-muffs-auditory-sensitivity', 'Noise-reducing headphones and ear muffs', 7)
 ) as v(name, slug, descr, ord)
-where product_categories.slug = 'sensory-integration-regulation'
+where product_categories.slug = 'sensory-products'
 on conflict (slug) do nothing;
 
--- children: Assistive Technology & Communication
+-- children: Communication & Language
 insert into product_categories (parent_category_id, name, slug, short_description, display_order)
 select id, v.name, v.slug, v.descr, v.ord from product_categories, (values
   ('AAC Devices & Tools', 'aac-devices-tools', 'AAC device covers, speech-generating button switches', 1),
   ('PECS & Communication Boards', 'pecs-communication-boards', 'Picture exchange systems, communication binders', 2),
   ('Sign Language Resources', 'sign-language-resources', null, 3),
-  ('Reading & Writing Aids', 'reading-writing-aids', 'Text-to-speech pens, screen magnifiers, grip pencils, dysgraphia-friendly writing slopes, adapted audiobooks', 4),
-  ('Vision & Hearing Assistive Devices', 'vision-hearing-assistive-devices', 'Low-vision aids, hearing aids, assistive listening devices', 5),
-  ('Educational Software & Apps', 'educational-software-apps', null, 6)
+  ('Speech Therapy & Visual Communication Tools', 'speech-therapy-visual-communication-tools', 'Communication boards, cards, schedules, timers', 4),
+  ('Reading & Writing Aids', 'reading-writing-aids', 'Text-to-speech pens, screen magnifiers, grip pencils, dysgraphia-friendly writing slopes, adapted audiobooks', 5),
+  ('Vision & Hearing Assistive Devices', 'vision-hearing-assistive-devices', 'Low-vision aids, hearing aids, assistive listening devices', 6)
 ) as v(name, slug, descr, ord)
-where product_categories.slug = 'assistive-technology-communication'
+where product_categories.slug = 'communication-language'
 on conflict (slug) do nothing;
 
--- children: Adaptive Classroom & Learning Tools
+-- children: Fine & Gross Motor Skills
+insert into product_categories (parent_category_id, name, slug, short_description, display_order)
+select id, v.name, v.slug, v.descr, v.ord from product_categories, (values
+  ('Fine Motor Tools', 'fine-motor-tools', 'Fidget toys, handwriting tools, therapy putty', 1),
+  ('Gross Motor Tools', 'gross-motor-tools', 'Balance boards, trampolines, climbing equipment', 2)
+) as v(name, slug, descr, ord)
+where product_categories.slug = 'fine-gross-motor-skills'
+on conflict (slug) do nothing;
+
+-- children: Behavior & Social Skills
+insert into product_categories (parent_category_id, name, slug, short_description, display_order)
+select id, v.name, v.slug, v.descr, v.ord from product_categories, (values
+  ('Behavior Management', 'behavior-management', 'Visual timers, reward systems', 1),
+  ('Calming Products', 'calming-products', 'Weighted stuffed animals, relaxation tools', 2),
+  ('Social Skills Development', 'social-skills-development', 'Role-playing toys, social stories', 3)
+) as v(name, slug, descr, ord)
+where product_categories.slug = 'behavior-social-skills'
+on conflict (slug) do nothing;
+
+-- children: Daily Living & Self-Care
+-- (deliberately no Supplements or Autism Awareness sub-categories -- see note above)
+insert into product_categories (parent_category_id, name, slug, short_description, display_order)
+select id, v.name, v.slug, v.descr, v.ord from product_categories, (values
+  ('Adaptive Clothing & Footwear', 'adaptive-clothing-footwear', 'Tagless shirts, magnetic-closure shoes, weighted vests, adaptive compression socks', 1),
+  ('Feeding Tools', 'feeding-tools', 'Weighted utensils, adaptive suction plates, easy-grip cups', 2),
+  ('Toileting & Bathing Aids', 'toileting-bathing-aids', null, 3),
+  ('Safety & Wandering Prevention', 'safety-wandering-prevention', 'GPS trackers, safety harnesses, car seat modifications, door/window alarms', 4),
+  ('Mobility & Positioning Equipment', 'mobility-positioning-equipment', 'Adaptive wheelchairs, walkers, therapy/exercise equipment, orthotic positioning equipment', 5),
+  ('Adult Independent Living & Workplace Tools', 'adult-independent-living-workplace-tools', 'Independent living aids and workplace accommodation tools for adults', 6)
+) as v(name, slug, descr, ord)
+where product_categories.slug = 'daily-living-self-care'
+on conflict (slug) do nothing;
+
+-- children: Learning & Education
 insert into product_categories (parent_category_id, name, slug, short_description, display_order)
 select id, v.name, v.slug, v.descr, v.ord from product_categories, (values
   ('Visual Supports', 'visual-supports', 'Visual schedule boards, visual timers, token economy reward boards, emotion check-in charts', 1),
   ('Adapted School Supplies', 'adapted-school-supplies', 'Loop scissors, oversized grid paper, desktop privacy shields, high-contrast learning mats, adaptive math manipulatives', 2),
-  ('Digital Downloads & Printables', 'digital-downloads-printables', 'Printable visual schedules, IEP goal trackers, lesson plans, PD courses -- creator marketplace (product_type=digital_download)', 3)
+  ('Digital Downloads & Printables', 'digital-downloads-printables', 'Printable visual schedules, IEP goal trackers, lesson plans, PD courses -- creator marketplace (product_type=digital_download)', 3),
+  ('Educational Software & Apps', 'educational-software-apps', null, 4),
+  ('Books', 'books', null, 5),
+  ('Sensory-Friendly Classroom Tools', 'sensory-friendly-classroom-tools', null, 6)
 ) as v(name, slug, descr, ord)
-where product_categories.slug = 'adaptive-classroom-learning-tools'
+where product_categories.slug = 'learning-education'
 on conflict (slug) do nothing;
 
--- children: Daily Living & Independent Skills
+-- children: Sleep & Relaxation
 insert into product_categories (parent_category_id, name, slug, short_description, display_order)
 select id, v.name, v.slug, v.descr, v.ord from product_categories, (values
-  ('Adaptive Clothing & Footwear', 'adaptive-clothing-footwear', 'Tagless shirts, magnetic-closure shoes, weighted vests, adaptive compression socks', 1),
-  ('Fine Motor & Feeding Tools', 'fine-motor-feeding-tools', 'Weighted utensils, adaptive suction plates, easy-grip cups', 2),
-  ('Toileting & Bathing Aids', 'toileting-bathing-aids', null, 3),
-  ('Sleep Aids', 'sleep-aids', null, 4),
-  ('Safety & Wandering Prevention', 'safety-wandering-prevention', 'GPS trackers, safety harnesses, car seat modifications, door/window alarms', 5),
-  ('Mobility & Positioning Equipment', 'mobility-positioning-equipment', 'Adaptive wheelchairs, walkers, therapy/exercise equipment, orthotic positioning equipment', 6),
-  ('Adult Independent Living & Workplace Tools', 'adult-independent-living-workplace-tools', 'Independent living aids and workplace accommodation tools for adults', 7)
+  ('Sleep Aids', 'sleep-aids', 'Weighted blankets, white noise machines, calming lights', 1),
+  ('Body Socks & Compression Sheets', 'body-socks-compression-sheets', null, 2)
 ) as v(name, slug, descr, ord)
-where product_categories.slug = 'daily-living-independent-skills'
+where product_categories.slug = 'sleep-relaxation'
+on conflict (slug) do nothing;
+
+-- children: Therapy Tools
+insert into product_categories (parent_category_id, name, slug, short_description, display_order)
+select id, v.name, v.slug, v.descr, v.ord from product_categories, (values
+  ('ABA, OT & Speech Therapy Tools', 'aba-ot-speech-therapy-tools', null, 1),
+  ('Sensory Diet Kits & Visual Therapy Tools', 'sensory-diet-kits-visual-therapy-tools', null, 2)
+) as v(name, slug, descr, ord)
+where product_categories.slug = 'therapy-tools'
+on conflict (slug) do nothing;
+
+-- children: Toys, Games & Fidgets
+insert into product_categories (parent_category_id, name, slug, short_description, display_order)
+select id, v.name, v.slug, v.descr, v.ord from product_categories, (values
+  ('Sensory, Educational & Calming Toys', 'sensory-educational-calming-toys', null, 1),
+  ('Interactive Games & Pretend Play', 'interactive-games-pretend-play', null, 2),
+  ('Fidgets', 'fidgets', 'Textured handheld fidgets, stress balls', 3)
+) as v(name, slug, descr, ord)
+where product_categories.slug = 'toys-games-fidgets'
 on conflict (slug) do nothing;

@@ -7,10 +7,12 @@ import { getActiveProductCategoryGroups, getProductsByCategory } from "@/lib/dat
 import { productIcons, iconKeyFromSlug } from "@/lib/icons";
 import { breadcrumbJsonLd } from "@/lib/seo";
 
-const groups = getActiveProductCategoryGroups().map((g) => ({
-  ...g,
-  productCount: getProductsByCategory(g.slug).length,
-}));
+const groups = await Promise.all(
+  (await getActiveProductCategoryGroups()).map(async (g) => ({
+    ...g,
+    productCount: (await getProductsByCategory(g.slug)).length,
+  })),
+);
 
 const breadcrumbs = breadcrumbJsonLd([{ name: "Home", url: "/" }, { name: "Products", url: "/products/" }], Astro.site!);
 ---

@@ -16,32 +16,40 @@ import {
 // `keywords` is what's actually matched against -- includes tagline/
 // description/category so a search like "speech" finds a provider whose
 // *name* doesn't contain the word but whose tagline does.
-const searchIndex = [
-  ...getPublishedProviders().map((p) => {
-    const category = getServiceCategoryBySlug(p.category_slugs[0]);
+const [providers, products, serviceLeaves, productGroups] = await Promise.all([
+  getPublishedProviders(), getPublishedProducts(), getAllServiceCategoryLeaves(), getProductCategoryGroups(),
+]);
+
+const providerEntries = await Promise.all(
+  providers.map(async (p) => {
+    const [category, city] = await Promise.all([getServiceCategoryBySlug(p.category_slugs[0]), getCityBySlug(p.city_slug)]);
     return {
       type: "Provider",
       name: p.name,
-      subtitle: `${category?.name} · ${getCityBySlug(p.city_slug)?.name}, TX`,
+      subtitle: `${category?.name} · ${city?.name}, TX`,
       url: `/texas/houston/providers/${p.slug}/`,
       keywords: [p.name, p.tagline, category?.name].filter(Boolean).join(" ").toLowerCase(),
     };
   }),
-  ...getPublishedProducts().map((p) => ({
+);
+
+const searchIndex = [
+  ...providerEntries,
+  ...products.map((p) => ({
     type: "Product",
     name: p.name,
     subtitle: `by ${p.brand}`,
     url: `/products/item/${p.slug}/`,
     keywords: [p.name, p.short_description, p.brand].filter(Boolean).join(" ").toLowerCase(),
   })),
-  ...getAllServiceCategoryLeaves().map((c) => ({
+  ...serviceLeaves.map((c) => ({
     type: "Specialty",
     name: c.name,
     subtitle: "Houston, TX",
     url: `/texas/houston/${c.slug}/`,
     keywords: [c.name, c.short_description].filter(Boolean).join(" ").toLowerCase(),
   })),
-  ...getProductCategoryGroups().map((c) => ({
+  ...productGroups.map((c) => ({
     type: "Product category",
     name: c.name,
     subtitle: "Shop products",

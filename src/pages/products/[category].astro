@@ -12,16 +12,19 @@ import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/seo";
 // Same rule as the service category pages: only publish a hub page once
 // there's at least one real product in it. getActiveProductCategoryGroups()
 // is the same function the homepage chips and footer use.
-export function getStaticPaths() {
-  return getActiveProductCategoryGroups().map((c) => ({
-    params: { category: c.slug },
-    props: { products: getProductsByCategory(c.slug) },
-  }));
+export async function getStaticPaths() {
+  const groups = await getActiveProductCategoryGroups();
+  return Promise.all(
+    groups.map(async (c) => ({
+      params: { category: c.slug },
+      props: { products: await getProductsByCategory(c.slug) },
+    })),
+  );
 }
 
 const { category: categorySlug } = Astro.params;
 const { products } = Astro.props;
-const category = getProductCategoryBySlug(categorySlug!)!;
+const category = (await getProductCategoryBySlug(categorySlug!))!;
 const faqs = getProductCategoryFaqs(category.slug);
 const breadcrumbs = breadcrumbJsonLd(
   [
