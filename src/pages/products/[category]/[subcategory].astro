@@ -7,33 +7,40 @@ import ProductCategorySidebar from "@/components/ProductCategorySidebar.astro";
 import ProductSubcategoryPills from "@/components/ProductSubcategoryPills.astro";
 import { PackageSearch } from "lucide-react";
 import {
-  getProductCategoryBySlug, getProductsByCategory, getProductCategoryFaqs, getProductCategoryGroups,
+  getProductCategoryBySlug, getProductCategoryGroups, getProductCategoryChildren, getProductsByCategory,
+  getProductCategoryFaqs,
 } from "@/lib/data";
 import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/seo";
 
-// Every group gets a real page, even ones with zero products yet -- the
-// sidebar links to all 9 unconditionally, so an inactive one needs
-// somewhere to land instead of a 404. See the empty state below for how
-// a category with nothing in it yet actually reads to a visitor.
+// One page per real sub-category (e.g. /products/sensory-products/sensory-swings/),
+// even ones with zero products yet -- same "show the full plan" reasoning
+// as the group pages in ../[category].astro.
 export async function getStaticPaths() {
   const groups = await getProductCategoryGroups();
-  return Promise.all(
-    groups.map(async (c) => ({
-      params: { category: c.slug },
-      props: { products: await getProductsByCategory(c.slug) },
-    })),
-  );
+  const paths = [];
+  for (const group of groups) {
+    const children = await getProductCategoryChildren(group.slug);
+    for (const child of children) {
+      paths.push({
+        params: { category: group.slug, subcategory: child.slug },
+        props: { products: await getProductsByCategory(child.slug), groupSlug: group.slug, groupName: group.name },
+      });
+    }
+  }
+  return paths;
 }
 
-const { category: categorySlug } = Astro.params;
-const { products } = Astro.props;
-const category = (await getProductCategoryBySlug(categorySlug!))!;
-const faqs = getProductCategoryFaqs(category.slug);
+const { subcategory: subcategorySlug } = Astro.params;
+const { products, groupSlug, groupName } = Astro.props;
+const subcategory = (await getProductCategoryBySlug(subcategorySlug!))!;
+const faqs = getProductCategoryFaqs(subcategory.slug);
+
 const breadcrumbs = breadcrumbJsonLd(
   [
     { name: "Home", url: "/" },
     { name: "Products", url: "/products/" },
-    { name: category.name, url: `/products/${category.slug}/` },
+    { name: groupName, url: `/products/${groupSlug}/` },
+    { name: subcategory.name, url: `/products/${groupSlug}/${subcategory.slug}/` },
   ],
   Astro.site!,
 );
@@ -47,8 +54,8 @@ const productCards = await Promise.all(
 );
 ---
 <Layout
-  title={`${category.name} | SpedCentral`}
-  description={category.meta_description ?? `Browse ${category.name} products on SpedCentral.`}
+  title={`${subcategory.name} | SpedCentral`}
+  description={subcategory.meta_description ?? subcategory.short_description ?? `Browse ${subcategory.name} products on SpedCentral.`}
 >
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbs)} slot="head" is:inline />
   <script type="application/ld+json" set:html={JSON.stringify(productList)} slot="head" is:inline />
@@ -58,35 +65,36 @@ const productCards = await Promise.all(
     <div class="mx-auto max-w-7xl px-6">
       <a href="/" class="hover:text-brand-orange">Home</a> /
       <a href="/products/" class="hover:text-brand-orange">Products</a> /
-      <span class="text-brand-dark">{category.name}</span>
+      <a href={`/products/${groupSlug}/`} class="hover:text-brand-orange">{groupName}</a> /
+      <span class="text-brand-dark">{subcategory.name}</span>
     </div>
   </nav>
 
   <header class="bg-cream py-12">
     <div class="mx-auto max-w-7xl px-6">
-      <h1 class="text-3xl font-bold text-brand-dark md:text-4xl">{category.name}</h1>
-      <p class="mt-4 max-w-3xl text-brand-dark/80">{category.short_description}</p>
+      <h1 class="text-3xl font-bold text-brand-dark md:text-4xl">{subcategory.name}</h1>
+      {subcategory.short_description && <p class="mt-4 max-w-3xl text-brand-dark/80">{subcategory.short_description}</p>}
       <p class="mt-3 text-sm font-semibold text-brand-green">{products.length} {products.length === 1 ? "product" : "products"}</p>
     </div>
   </header>
 
   <div class="mx-auto max-w-7xl px-6 py-12 lg:flex lg:items-start lg:gap-10">
-    <ProductCategorySidebar activeGroupSlug={category.slug} />
+    <ProductCategorySidebar activeGroupSlug={groupSlug} activeSubSlug={subcategory.slug} />
 
     <div class="flex-1">
-      <ProductSubcategoryPills groupSlug={category.slug} groupName={category.name} />
+      <ProductSubcategoryPills groupSlug={groupSlug} groupName={groupName} activeSubSlug={subcategory.slug} />
 
       {products.length > 0 ? (
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {productCards.map(({ p, category: leafCategory }) => <ProductCard product={p} category={leafCategory} />)}
+          {productCards.map(({ p, category }) => <ProductCard product={p} category={category} />)}
         </div>
       ) : (
         <div class="rounded-lg border border-dashed border-border bg-cream/50 p-12 text-center">
           <PackageSearch className="mx-auto h-10 w-10 text-brand-orange" />
           <p class="mt-4 font-semibold text-brand-dark">We're currently adding products to this category.</p>
-          <p class="mt-2 text-sm text-muted-foreground">Check back soon, or browse everything we have so far.</p>
-          <a href="/products/" class="mt-4 inline-flex items-center rounded-md bg-brand-orange px-5 py-2 text-sm font-semibold text-white hover:opacity-90">
-            Browse all products
+          <p class="mt-2 text-sm text-muted-foreground">Check back soon, or browse everything in {groupName}.</p>
+          <a href={`/products/${groupSlug}/`} class="mt-4 inline-flex items-center rounded-md bg-brand-orange px-5 py-2 text-sm font-semibold text-white hover:opacity-90">
+            Browse all {groupName}
           </a>
         </div>
       )}

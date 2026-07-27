@@ -1,0 +1,36 @@
+---
+// Lets a visitor drill from a group (e.g. Sensory Products) into one
+// specific sub-category (e.g. Sensory Swings) from either the group page
+// or a sub-category page itself. Works identically on mobile and desktop --
+// unlike the full sidebar tree, a horizontal pill row fits a phone screen
+// fine, so this is the mobile path to sub-categories.
+import { getProductCategoryChildren } from "@/lib/data";
+
+interface Props {
+  groupSlug: string;
+  groupName: string;
+  activeSubSlug?: string;
+}
+const { groupSlug, groupName, activeSubSlug } = Astro.props;
+const children = await getProductCategoryChildren(groupSlug);
+---
+{children.length > 0 && (
+  <div class="mb-6 -mx-6 overflow-x-auto px-6 sm:mx-0 sm:overflow-visible sm:px-0">
+    <div class="flex flex-wrap gap-2">
+      <a
+        href={`/products/${groupSlug}/`}
+        class={`flex-shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${!activeSubSlug ? "border-brand-orange bg-brand-orange/10 text-brand-orange" : "border-border text-brand-dark/80"}`}
+      >
+        All {groupName}
+      </a>
+      {children.map((c) => (
+        <a
+          href={`/products/${groupSlug}/${c.slug}/`}
+          class={`flex-shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${activeSubSlug === c.slug ? "border-brand-orange bg-brand-orange/10 text-brand-orange" : "border-border text-brand-dark/80"}`}
+        >
+          {c.name}
+        </a>
+      ))}
+    </div>
+  </div>
+)}

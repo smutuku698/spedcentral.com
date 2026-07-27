@@ -1,40 +1,47 @@
 ---
-// Always shows all 9 groups, even ones with zero products yet -- the whole
-// point is letting users see the full breadth of what's planned here, not
-// just what's populated so far (unlike the provider-category pages, which
-// hide empty categories entirely to avoid thin-content pages).
+// Two-level tree: top-level groups (always all 9, even empty ones) each
+// expandable to their real sub-categories -- e.g. Sensory Products ->
+// Sensory Swings, Oral Motor Tools, etc. As the catalog grows within a
+// group (different brands/colors of the same product type), the
+// sub-category is what keeps a single group page from becoming an
+// unsorted wall of everything -- this is the actual navigation for that,
+// not just a group-level filter.
 //
-// Two renderings of the same data: a full vertical list on desktop (lg+),
-// and a horizontal scrolling pill row on mobile -- a 10-item vertical list
-// would otherwise sit above the fold and push every product down past a
-// full phone screen before a visitor sees anything.
-import { getProductCategoryGroups, getProductsByCategory } from "@/lib/data";
+// Two renderings: a full expandable list on desktop (lg+), and a
+// horizontal scrolling pill row of just the 9 groups on mobile (a full
+// nested tree doesn't fit a phone screen -- mobile drill-down into
+// sub-categories happens via ProductSubcategoryPills on the group/
+// sub-category page itself instead).
+import { ChevronDown } from "lucide-react";
+import { getProductCategoryGroups, getProductCategoryChildren, getProductsByCategory } from "@/lib/data";
 
 interface Props {
-  activeSlug?: string;
+  activeGroupSlug?: string;
+  activeSubSlug?: string;
 }
-const { activeSlug } = Astro.props;
+const { activeGroupSlug, activeSubSlug } = Astro.props;
 
 const groups = await Promise.all(
   (await getProductCategoryGroups()).map(async (g) => ({
     ...g,
     productCount: (await getProductsByCategory(g.slug)).length,
+    children: await getProductCategoryChildren(g.slug),
   })),
 );
 ---
-<!-- Mobile: horizontal scrolling pills -->
+<!-- Mobile: horizontal scrolling pills, top-level groups only -->
 <div class="mb-6 -mx-6 overflow-x-auto px-6 lg:hidden">
   <div class="flex gap-2 pb-1">
     <a
       href="/products/"
-      class={`flex-shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${!activeSlug ? "border-brand-orange bg-brand-orange/10 text-brand-orange" : "border-border text-brand-dark/80"}`}
+      class={`flex-shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${!activeGroupSlug ? "border-brand-orange bg-brand-orange/10 text-brand-orange" : "border-border text-brand-dark/80"}`}
     >
       All Products
     </a>
     {groups.map((g) => (
       <a
         href={`/products/${g.slug}/`}
-        class={`flex-shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${activeSlug === g.slug ? "border-brand-orange bg-brand-orange/10 text-brand-orange" : "border-border text-brand-dark/80"}`}
+        class={`flex-shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${activeGroupSlug === g.slug ? "border-brand-orange bg-brand-orange/10 text-brand-orange" : "border-border text-brand-dark/80"}`}
       >
         {g.name}{g.productCount > 0 ? ` (${g.productCount})` : ""}
       </a>
@@ -42,25 +49,52 @@ const groups = await Promise.all(
   </div>
 </div>
 
-<!-- Desktop: vertical sidebar -->
-<aside class="hidden lg:block lg:w-64 lg:flex-shrink-0">
+<!-- Desktop: expandable tree -->
+<aside class="hidden lg:block lg:w-72 lg:flex-shrink-0">
   <div class="lg:sticky lg:top-6">
     <h2 class="text-sm font-bold uppercase tracking-wide text-brand-dark">Shop by Category</h2>
     <nav class="mt-4 space-y-1">
       <a
         href="/products/"
-        class={`block rounded-md px-3 py-2 text-sm font-semibold ${!activeSlug ? "bg-brand-orange/10 text-brand-orange" : "text-brand-dark/80 hover:bg-cream hover:text-brand-orange"}`}
+        class={`block rounded-md px-3 py-2 text-sm font-semibold ${!activeGroupSlug ? "bg-brand-orange/10 text-brand-orange" : "text-brand-dark/80 hover:bg-cream hover:text-brand-orange"}`}
       >
         All Products
       </a>
       {groups.map((g) => (
-        <a
-          href={`/products/${g.slug}/`}
-          class={`flex items-center justify-between rounded-md px-3 py-2 text-sm ${activeSlug === g.slug ? "bg-brand-orange/10 font-semibold text-brand-orange" : "text-brand-dark/80 hover:bg-cream hover:text-brand-orange"}`}
-        >
-          <span>{g.name}</span>
-          <span class="text-xs text-muted-foreground">{g.productCount || "—"}</span>
-        </a>
+        g.children.length > 0 ? (
+          <details class="group" open={activeGroupSlug === g.slug}>
+            <summary class="flex cursor-pointer list-none items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-cream [&::-webkit-details-marker]:hidden">
+              <a
+                href={`/products/${g.slug}/`}
+                class={`flex-1 ${activeGroupSlug === g.slug && !activeSubSlug ? "font-semibold text-brand-orange" : "text-brand-dark/80"}`}
+              >
+                {g.name}
+              </a>
+              <span class="flex items-center gap-2">
+                <span class="text-xs text-muted-foreground">{g.productCount || "—"}</span>
+                <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+              </span>
+            </summary>
+            <div class="ml-3 mt-1 space-y-0.5 border-l border-border pl-3">
+              {g.children.map((c) => (
+                <a
+                  href={`/products/${g.slug}/${c.slug}/`}
+                  class={`block rounded-md px-2 py-1.5 text-xs ${activeSubSlug === c.slug ? "font-semibold text-brand-orange" : "text-brand-dark/70 hover:text-brand-orange"}`}
+                >
+                  {c.name}
+                </a>
+              ))}
+            </div>
+          </details>
+        ) : (
+          <a
+            href={`/products/${g.slug}/`}
+            class={`flex items-center justify-between rounded-md px-3 py-2 text-sm ${activeGroupSlug === g.slug ? "bg-brand-orange/10 font-semibold text-brand-orange" : "text-brand-dark/80 hover:bg-cream hover:text-brand-orange"}`}
+          >
+            <span>{g.name}</span>
+            <span class="text-xs text-muted-foreground">{g.productCount || "—"}</span>
+          </a>
+        )
       ))}
     </nav>
   </div>

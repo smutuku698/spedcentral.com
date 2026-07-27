@@ -17,9 +17,9 @@ export async function getStaticPaths() {
 
 const { product } = Astro.props;
 // Products are tagged at the leaf level (e.g. "Digital Downloads &
-// Printables"), but hub pages and FAQ content only exist at the parent
-// group level -- resolve up one level so the breadcrumb link and FAQs
-// point somewhere that actually exists.
+// Printables"), which now has its own page too (see
+// products/[category]/[subcategory].astro) -- but FAQ content only exists
+// at the parent group level, so that part still resolves up one level.
 const category = (await getProductCategoryBySlug(product.category_slugs[0]))!;
 const categoryGroup = category.parent_id ? (await getProductCategoryBySlug(category.parent_id))! : category;
 const reviews = await getProductReviews(product.id);
@@ -63,6 +63,9 @@ const breadcrumbs = breadcrumbJsonLd(
     { name: "Home", url: "/" },
     { name: "Products", url: "/products/" },
     { name: categoryGroup.name, url: `/products/${categoryGroup.slug}/` },
+    ...(category.slug !== categoryGroup.slug
+      ? [{ name: category.name, url: `/products/${categoryGroup.slug}/${category.slug}/` }]
+      : []),
     { name: product.name, url: `/products/item/${product.slug}/` },
   ],
   Astro.site!,
@@ -80,6 +83,11 @@ const breadcrumbs = breadcrumbJsonLd(
       <a href="/" class="hover:text-brand-orange">Home</a> /
       <a href="/products/" class="hover:text-brand-orange">Products</a> /
       <a href={`/products/${categoryGroup.slug}/`} class="hover:text-brand-orange">{categoryGroup.name}</a> /
+      {category.slug !== categoryGroup.slug && (
+        <>
+          <a href={`/products/${categoryGroup.slug}/${category.slug}/`} class="hover:text-brand-orange">{category.name}</a> /
+        </>
+      )}
       <span class="text-brand-dark">{product.name}</span>
     </div>
   </nav>
