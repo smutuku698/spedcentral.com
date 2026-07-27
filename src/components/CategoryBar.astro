@@ -1,0 +1,22 @@
+---
+// All 7 top-level specialty groups, straight from service-categories.json --
+// this is the full taxonomy the site is built around (all 50 states,
+// eventually), not filtered down to only what Houston has listings for yet.
+// A category without providers yet still gets a link; it just won't have a
+// dedicated hub page built until there's real content behind it.
+import { getServiceCategoryGroups } from "@/lib/data";
+
+const groups = getServiceCategoryGroups();
+---
+<section class="border-b border-border bg-white py-10">
+  <div class="mx-auto max-w-6xl px-6 text-center">
+    <p class="text-sm text-muted-foreground">Browse specialists by category</p>
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+      {groups.map((g) => (
+        <a href={`/texas/houston/#${g.slug}`} class="rounded-full border border-border px-4 py-2 text-sm font-semibold text-brand-dark hover:border-brand-orange hover:text-brand-orange">
+          {g.name}
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

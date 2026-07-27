@@ -1,0 +1,53 @@
+---
+import "@/styles/global.css";
+import { websiteJsonLd, organizationJsonLd } from "@/lib/seo";
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath?: string; // e.g. "/texas/houston/speech-language-pathologist/"
+  ogImage?: string;
+  ogType?: "website" | "product" | "profile";
+  noindex?: boolean;
+}
+
+const {
+  title, description, canonicalPath = Astro.url.pathname, ogImage, ogType = "website", noindex = false,
+} = Astro.props;
+const canonicalURL = new URL(canonicalPath, Astro.site);
+const resolvedOgImage = ogImage ? new URL(ogImage, Astro.site) : undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:site_name" content="SpedCentral" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    {resolvedOgImage && <meta property="og:image" content={resolvedOgImage} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {resolvedOgImage && <meta name="twitter:image" content={resolvedOgImage} />}
+
+    <script type="application/ld+json" set:html={JSON.stringify(websiteJsonLd(Astro.site!))} is:inline />
+    <script type="application/ld+json" set:html={JSON.stringify(organizationJsonLd(Astro.site!))} is:inline />
+
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-white">
+    <slot />
+  </body>
+</html>

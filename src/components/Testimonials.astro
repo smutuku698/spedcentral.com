@@ -1,0 +1,37 @@
+---
+// Placeholder testimonials for the initial design pass -- replace with real,
+// permissioned family reviews before launch.
+import review1 from "@/assets/review1.jpg";
+import review2 from "@/assets/review2.jpg";
+import review3 from "@/assets/review3.jpg";
+import review4 from "@/assets/review4.jpg";
+import { Image } from "astro:assets";
+
+const reviews = [
+  { title: "Patient, knowledgeable, and consistent", body: "Our son's speech therapist has been incredible. She explains every exercise to us so we can keep practicing at home, and we've seen real progress in just a few months.", name: "Houston parent, son age 6", subject: "Speech-Language Pathologist", img: review1, tint: "bg-[oklch(0.97_0.03_45)]", accent: "text-brand-orange" },
+  { title: "Exactly what our family needed", body: "Finding a BCBA who actually had availability felt impossible until we found this directory. The provider we matched with has been a great fit for our daughter's ABA program.", name: "Houston parent, daughter age 4", subject: "Behavioral Therapist (ABA)", img: review2, tint: "bg-[oklch(0.96_0.03_240)]", accent: "text-[oklch(0.55_0.2_240)]" },
+  { title: "Finally, real progress with reading", body: "My son struggled with dyslexia for years. His Orton-Gillingham tutor has helped him go from dreading reading to picking up books on his own.", name: "Houston parent, son age 9", subject: "Dyslexia & Reading Specialist", img: review3, tint: "bg-[oklch(0.97_0.03_140)]", accent: "text-[oklch(0.5_0.18_140)]" },
+  { title: "Made the IEP process so much less stressful", body: "Our advocate came to the meeting prepared and knew exactly what to ask for. We finally feel like the school is meeting our child where he is.", name: "Houston parent, son age 10", subject: "Special Education Advocate", img: review4, tint: "bg-[oklch(0.96_0.03_240)]", accent: "text-[oklch(0.55_0.2_240)]" },
+];
+---
+<section class="bg-cream py-16">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="text-center">
+      <h2 class="text-3xl font-bold text-brand-dark">Families finding the right fit</h2>
+      <p class="mt-2 text-sm text-muted-foreground">Every provider on SpedCentral is reviewed by the families who work with them.</p>
+    </div>
+    <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+      {reviews.map((r) => (
+        <div class={`flex gap-4 rounded-lg p-6 ${r.tint}`}>
+          <Image src={r.img} alt="" width={80} height={80} class="h-20 w-20 flex-shrink-0 rounded-full object-cover" />
+          <div>
+            <h3 class={`text-sm font-bold ${r.accent}`}>&#10077; {r.title}</h3>
+            <p class="mt-2 text-sm text-brand-dark/80">{r.body}</p>
+            <p class="mt-2 text-xs text-muted-foreground">{r.name}</p>
+            <p class={`mt-1 text-sm font-semibold ${r.accent}`}>{r.subject}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

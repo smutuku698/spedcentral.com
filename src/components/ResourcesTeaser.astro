@@ -1,0 +1,47 @@
+---
+// These will become real entries in an Astro content collection
+// (src/content/resources/) -- see the note at the bottom of supabase/schema.sql
+// for why guides live as authored content rather than database rows.
+import { FileText, Scale, HelpCircle } from "lucide-react";
+
+const guides = [
+  {
+    title: "How to Get an IEP Evaluation in Texas",
+    excerpt: "A step-by-step walkthrough of requesting, scheduling, and preparing for your child's first evaluation.",
+    slug: "how-to-get-an-iep-evaluation-in-texas",
+    icon: Scale,
+  },
+  {
+    title: "BCBA vs. RBT: What's the Difference?",
+    excerpt: "What each credential means, and which one your child's ABA team should include.",
+    slug: "bcba-vs-rbt-whats-the-difference",
+    icon: HelpCircle,
+  },
+  {
+    title: "A Parent's Glossary of Special Education Terms",
+    excerpt: "Plain-language definitions for IEP, 504, FAPE, LRE, and the other acronyms schools assume you already know.",
+    slug: "parents-glossary-of-special-education-terms",
+    icon: FileText,
+  },
+];
+---
+<section class="bg-white py-16">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h2 class="text-3xl font-bold text-brand-dark">Guides for families &amp; teachers</h2>
+        <p class="mt-2 text-sm text-muted-foreground">Straight answers to the questions that come up most.</p>
+      </div>
+      <a href="/resources/" class="text-sm font-semibold text-brand-orange hover:underline">See all guides &rarr;</a>
+    </div>
+    <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+      {guides.map((g) => (
+        <a href={`/resources/${g.slug}/`} class="group rounded-lg border border-border bg-cream p-6 transition hover:border-brand-orange">
+          <g.icon className="h-6 w-6 text-brand-orange" />
+          <h3 class="mt-3 font-bold text-brand-dark group-hover:text-brand-orange">{g.title}</h3>
+          <p class="mt-2 text-sm text-brand-dark/80">{g.excerpt}</p>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

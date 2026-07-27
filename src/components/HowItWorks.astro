@@ -1,0 +1,52 @@
+---
+import { Search, ShieldCheck, MessageCircle } from "lucide-react";
+
+const steps = [
+  {
+    step: "Step 1",
+    title: "SEARCH BY SERVICE & LOCATION",
+    description: "Tell us what kind of support you need and where — speech therapy, ABA, dyslexia tutoring, and more, across the Houston metro.",
+    icon: Search,
+    tint: "bg-brand-orange/10",
+    iconColor: "text-brand-orange",
+  },
+  {
+    step: "Step 2",
+    title: "COMPARE VERIFIED PROVIDERS",
+    description: "Review credentials, licensing, ratings, and pricing side by side to find the right fit for your family.",
+    icon: ShieldCheck,
+    tint: "bg-brand-green/10",
+    iconColor: "text-brand-green",
+  },
+  {
+    step: "Step 3",
+    title: "CONNECT DIRECTLY",
+    description: "Reach out directly to schedule a consultation — no middleman, no waiting on a callback.",
+    icon: MessageCircle,
+    tint: "bg-brand-dark/5",
+    iconColor: "text-brand-dark",
+  },
+];
+---
+<section class="bg-white py-16">
+  <div class="mx-auto max-w-6xl px-6 text-center">
+    <h2 class="text-3xl font-bold text-brand-dark">Finding the right specialist is easy</h2>
+    <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+      {steps.map((s) => (
+        <div class="rounded-lg border border-border bg-white p-6 text-left shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${s.tint}`}>
+              <s.icon className={`h-6 w-6 ${s.iconColor}`} />
+            </div>
+            <p class="text-sm font-semibold text-muted-foreground">{s.step}</p>
+          </div>
+          <h3 class="mt-4 text-lg font-bold text-brand-dark">{s.title}</h3>
+          <p class="mt-2 text-sm text-brand-dark/70">{s.description}</p>
+        </div>
+      ))}
+    </div>
+    <p class="mt-12 text-xl font-semibold text-brand-dark">Every listing is reviewed before it goes live.</p>
+    <p class="mt-2 text-sm text-muted-foreground">Our team checks credentials and licensing so you can search with confidence.</p>
+    <a href="/texas/houston/" class="mt-6 inline-block rounded-md bg-brand-orange px-8 py-3 font-semibold text-white hover:opacity-90">Browse providers</a>
+  </div>
+</section>

@@ -1,0 +1,17 @@
+{
+  "speech-language-pathologist": [
+    { "question": "What does a speech-language pathologist do?", "answer": "A speech-language pathologist (SLP) evaluates and treats communication disorders, including articulation, language delays, stuttering, and the use of augmentative and alternative communication (AAC) devices. Many SLPs also address feeding and swallowing difficulties." },
+    { "question": "How do I know if my child needs speech therapy?", "answer": "Common signs include limited vocabulary for their age, difficulty being understood by unfamiliar listeners, stuttering, or trouble following multi-step directions. A speech-language evaluation can confirm whether therapy is recommended." },
+    { "question": "Does insurance cover speech therapy in Texas?", "answer": "Many Texas insurance plans cover speech therapy when it's deemed medically necessary, though coverage varies by plan and diagnosis. Check with the specific provider about accepted insurance and any prior-authorization requirements." }
+  ],
+  "behavioral-therapist-aba": [
+    { "question": "What is ABA therapy?", "answer": "Applied Behavior Analysis (ABA) is a therapy approach, most often used with autistic children, that uses reinforcement strategies to build communication, social, and daily-living skills while reducing behaviors that interfere with learning." },
+    { "question": "What's the difference between a BCBA and an RBT?", "answer": "A Board Certified Behavior Analyst (BCBA) designs and supervises the treatment plan, while a Registered Behavior Technician (RBT) delivers day-to-day therapy sessions under the BCBA's supervision." },
+    { "question": "How many hours of ABA therapy does my child need?", "answer": "Recommended hours vary widely based on your child's individual needs and are typically determined after an initial assessment -- ranging from a few hours a week to full-day, intensive programs." }
+  ],
+  "dyslexia-reading-specialist": [
+    { "question": "What is Orton-Gillingham?", "answer": "Orton-Gillingham is a structured, multisensory approach to teaching reading that breaks language down into its most basic parts -- sounds and letters -- and builds up systematically. It's widely used with students who have dyslexia." },
+    { "question": "At what age should dyslexia be assessed?", "answer": "Many signs of dyslexia can be identified as early as kindergarten or first grade, though it's never too late for an assessment -- older students and even adults benefit from a proper diagnostic evaluation and targeted intervention." },
+    { "question": "Will my child's school provide reading intervention, or do I need a private tutor?", "answer": "Schools are required to provide reading intervention for students who qualify under an IEP or 504 plan, but many families also pursue private tutoring for more individualized or intensive instruction alongside school services." }
+  ]
+}

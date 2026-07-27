@@ -1,0 +1,7 @@
+[
+  { "id": "early-intervention-0-3", "name": "Early Intervention (0-3)", "slug": "early-intervention-0-3", "min_age": 0, "max_age": 3, "display_order": 1 },
+  { "id": "preschool-3-5", "name": "Preschool (3-5)", "slug": "preschool-3-5", "min_age": 3, "max_age": 5, "display_order": 2 },
+  { "id": "elementary-6-11", "name": "Elementary (6-11)", "slug": "elementary-6-11", "min_age": 6, "max_age": 11, "display_order": 3 },
+  { "id": "adolescent-12-17", "name": "Adolescent (12-17)", "slug": "adolescent-12-17", "min_age": 12, "max_age": 17, "display_order": 4 },
+  { "id": "adult-18-plus", "name": "Adult (18+)", "slug": "adult-18-plus", "min_age": 18, "max_age": null, "display_order": 5 }
+]

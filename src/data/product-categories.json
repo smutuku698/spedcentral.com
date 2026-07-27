@@ -1,0 +1,29 @@
+[
+  { "id": "sensory-integration-regulation", "parent_id": null, "name": "Sensory Integration & Regulation", "slug": "sensory-integration-regulation", "icon": "sparkles", "display_order": 10, "short_description": "Tools that help children with ADHD, autism, or sensory processing differences regulate their nervous system -- through deep pressure, movement, or fidgeting -- so they can focus and stay calm.", "meta_description": "Shop sensory tools for calming, movement, and fidgeting -- weighted vests, wobble seats, and more." },
+  { "id": "assistive-technology-communication", "parent_id": null, "name": "Assistive Technology & Communication", "slug": "assistive-technology-communication", "icon": "message-circle", "display_order": 20, "short_description": "Hardware, apps, and everyday aids that help non-verbal or learning-disabled students express themselves and access information -- from AAC devices to text-to-speech tools.", "meta_description": "Shop AAC devices, communication boards, and assistive tech that help kids express themselves." },
+  { "id": "adaptive-classroom-learning-tools", "parent_id": null, "name": "Adaptive Classroom & Learning Tools", "slug": "adaptive-classroom-learning-tools", "icon": "presentation", "display_order": 30, "short_description": "Physical supplies and printable resources that teachers and parents use to modify a learning environment -- visual schedules, adapted supplies, and editable classroom downloads.", "meta_description": "Shop visual schedules, adapted supplies, and printable classroom tools for special education." },
+  { "id": "daily-living-independent-skills", "parent_id": null, "name": "Daily Living & Independent Skills", "slug": "daily-living-independent-skills", "icon": "home", "display_order": 40, "short_description": "Products that help children and adults manage daily routines more independently -- adaptive clothing, feeding tools, safety devices, and mobility equipment.", "meta_description": "Shop adaptive clothing, feeding tools, and safety products for independent daily living." },
+
+  { "id": "calming-deep-pressure", "parent_id": "sensory-integration-regulation", "name": "Calming & Deep Pressure", "slug": "calming-deep-pressure", "display_order": 1 },
+  { "id": "movement-active-seating", "parent_id": "sensory-integration-regulation", "name": "Movement & Active Seating", "slug": "movement-active-seating", "display_order": 2 },
+  { "id": "fidgets-oral-motor", "parent_id": "sensory-integration-regulation", "name": "Fidgets & Oral Motor", "slug": "fidgets-oral-motor", "display_order": 3 },
+
+  { "id": "aac-devices-tools", "parent_id": "assistive-technology-communication", "name": "AAC Devices & Tools", "slug": "aac-devices-tools", "display_order": 1 },
+  { "id": "pecs-communication-boards", "parent_id": "assistive-technology-communication", "name": "PECS & Communication Boards", "slug": "pecs-communication-boards", "display_order": 2 },
+  { "id": "sign-language-resources", "parent_id": "assistive-technology-communication", "name": "Sign Language Resources", "slug": "sign-language-resources", "display_order": 3 },
+  { "id": "reading-writing-aids", "parent_id": "assistive-technology-communication", "name": "Reading & Writing Aids", "slug": "reading-writing-aids", "display_order": 4 },
+  { "id": "vision-hearing-assistive-devices", "parent_id": "assistive-technology-communication", "name": "Vision & Hearing Assistive Devices", "slug": "vision-hearing-assistive-devices", "display_order": 5 },
+  { "id": "educational-software-apps", "parent_id": "assistive-technology-communication", "name": "Educational Software & Apps", "slug": "educational-software-apps", "display_order": 6 },
+
+  { "id": "visual-supports", "parent_id": "adaptive-classroom-learning-tools", "name": "Visual Supports", "slug": "visual-supports", "display_order": 1 },
+  { "id": "adapted-school-supplies", "parent_id": "adaptive-classroom-learning-tools", "name": "Adapted School Supplies", "slug": "adapted-school-supplies", "display_order": 2 },
+  { "id": "digital-downloads-printables", "parent_id": "adaptive-classroom-learning-tools", "name": "Digital Downloads & Printables", "slug": "digital-downloads-printables", "display_order": 3 },
+
+  { "id": "adaptive-clothing-footwear", "parent_id": "daily-living-independent-skills", "name": "Adaptive Clothing & Footwear", "slug": "adaptive-clothing-footwear", "display_order": 1 },
+  { "id": "fine-motor-feeding-tools", "parent_id": "daily-living-independent-skills", "name": "Fine Motor & Feeding Tools", "slug": "fine-motor-feeding-tools", "display_order": 2 },
+  { "id": "toileting-bathing-aids", "parent_id": "daily-living-independent-skills", "name": "Toileting & Bathing Aids", "slug": "toileting-bathing-aids", "display_order": 3 },
+  { "id": "sleep-aids", "parent_id": "daily-living-independent-skills", "name": "Sleep Aids", "slug": "sleep-aids", "display_order": 4 },
+  { "id": "safety-wandering-prevention", "parent_id": "daily-living-independent-skills", "name": "Safety & Wandering Prevention", "slug": "safety-wandering-prevention", "display_order": 5 },
+  { "id": "mobility-positioning-equipment", "parent_id": "daily-living-independent-skills", "name": "Mobility & Positioning Equipment", "slug": "mobility-positioning-equipment", "display_order": 6 },
+  { "id": "adult-independent-living-workplace-tools", "parent_id": "daily-living-independent-skills", "name": "Adult Independent Living & Workplace Tools", "slug": "adult-independent-living-workplace-tools", "display_order": 7 }
+]

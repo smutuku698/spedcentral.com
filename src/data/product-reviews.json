@@ -1,0 +1,13 @@
+[
+  { "id": "prev-vest-1", "product_id": "deep-pressure-compression-vest", "author_name": "Nicole B.", "rating": 5, "body": "My daughter asks for this by name now when she's feeling overwhelmed. It's thin enough to wear under a school shirt without anyone noticing.", "is_published": true, "created_at": "2026-04-11" },
+  { "id": "prev-vest-2", "product_id": "deep-pressure-compression-vest", "author_name": "Carlos M.", "rating": 4, "body": "Good quality and washes well. Sizing runs a little large, so check the chart before ordering.", "is_published": true, "created_at": "2026-02-02" },
+
+  { "id": "prev-talkpath-1", "product_id": "talkpath-aac-communication-app", "author_name": "Rebecca F.", "rating": 5, "body": "We worked with our SLP to set up the vocabulary and it's made a real difference -- my son can finally tell us what he wants instead of getting frustrated.", "is_published": true, "created_at": "2026-03-28" },
+  { "id": "prev-talkpath-2", "product_id": "talkpath-aac-communication-app", "author_name": "James P.", "rating": 5, "body": "Worth every penny compared to a dedicated device. The one-time license was a big relief after looking at subscription-based alternatives.", "is_published": true, "created_at": "2026-01-15" },
+
+  { "id": "prev-visual-1", "product_id": "visual-schedule-printable-bundle", "author_name": "Ms. Thompson", "rating": 5, "body": "Used these on day one of the school year and my whole class picked up the routine faster than any year before. Editable PDFs made it easy to relabel for our specific schedule.", "is_published": true, "created_at": "2026-05-20" },
+  { "id": "prev-visual-2", "product_id": "visual-schedule-printable-bundle", "author_name": "Ashley D.", "rating": 5, "body": "Bought this for home use and it's cut down our morning meltdowns significantly. Great value for an instant download.", "is_published": true, "created_at": "2026-04-01" },
+
+  { "id": "prev-easygrip-1", "product_id": "easygrip-adaptive-utensil-set", "author_name": "Karen W.", "rating": 4, "body": "The weighted handles have really helped my son's grip. Fork tines could be a bit sharper for cutting soft foods, but overall a solid set.", "is_published": true, "created_at": "2026-02-27" },
+  { "id": "prev-easygrip-2", "product_id": "easygrip-adaptive-utensil-set", "author_name": "Luis G.", "rating": 5, "body": "Dishwasher safe and durable -- ours has survived almost a year of daily use without the coating wearing off.", "is_published": true, "created_at": "2025-12-19" }
+]

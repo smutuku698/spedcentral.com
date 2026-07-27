@@ -1,0 +1,254 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import { Image } from "astro:assets";
+import {
+  Star, MapPin, ShieldCheck, Phone, Mail, Globe, Clock, DollarSign,
+  Languages as LanguagesIcon, ClipboardCheck, Users,
+} from "lucide-react";
+import {
+  getPublishedProviders, getCityBySlug, getServiceCategoryBySlug,
+  getCredentialsBySlugs, getLanguagesBySlugs, getInsurancesBySlugs, getAgeGroupsBySlugs,
+  getProviderReviews, getRelatedProviders, getServiceCategoryFaqs, formatHours,
+} from "@/lib/data";
+import { resolveAssetImage } from "@/lib/images";
+import { breadcrumbJsonLd, schemaTypeForGroup, openingHoursSpecification } from "@/lib/seo";
+
+export function getStaticPaths() {
+  return getPublishedProviders().map((provider) => ({ params: { slug: provider.slug }, props: { provider } }));
+}
+
+const { provider } = Astro.props;
+const city = getCityBySlug(provider.city_slug)!;
+const category = getServiceCategoryBySlug(provider.category_slugs[0])!;
+const credentials = getCredentialsBySlugs(provider.credential_slugs);
+const languages = getLanguagesBySlugs(provider.language_slugs);
+const insurances = getInsurancesBySlugs(provider.insurance_slugs);
+const ageGroups = getAgeGroupsBySlugs(provider.age_group_slugs);
+const reviews = getProviderReviews(provider.id);
+const related = getRelatedProviders(provider);
+const faqs = getServiceCategoryFaqs(category.slug);
+const hours = formatHours(provider.hours);
+const photo = resolveAssetImage(provider.photo_file);
+
+const priceLabel = provider.price_unit === "contact_for_pricing"
+  ? "Contact for pricing"
+  : `$${provider.price_min}–$${provider.price_max} ${provider.price_unit.replace("per_", "/ ")}`;
+
+const socialLinks = [
+  provider.social_facebook_url, provider.social_instagram_url,
+  provider.social_linkedin_url, provider.social_youtube_url,
+].filter((url): url is string => Boolean(url));
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  // A specific business subtype (MedicalBusiness, LegalService, ChildCare...)
+  // rather than a generic type, and never "Person" even for a solo
+  // practitioner -- what's being represented is the practice/listing, which
+  // is what unlocks map-pin, hours, and rating rich results in search.
+  "@type": schemaTypeForGroup(category.parent_id),
+  name: provider.name,
+  description: provider.tagline,
+  image: photo ? new URL(photo.src, Astro.site).toString() : undefined,
+  telephone: provider.phone,
+  email: provider.email,
+  url: provider.website_url,
+  priceRange: provider.price_unit === "contact_for_pricing" ? undefined : `$${provider.price_min}-$${provider.price_max}`,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: provider.address_line1,
+    addressLocality: city.name,
+    addressRegion: "TX",
+    postalCode: provider.postal_code,
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: provider.latitude,
+    longitude: provider.longitude,
+  },
+  openingHoursSpecification: openingHoursSpecification(provider.hours),
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: provider.rating_avg,
+    reviewCount: provider.review_count,
+  },
+  ...(socialLinks.length > 0 ? { sameAs: socialLinks } : {}),
+};
+
+const breadcrumbs = breadcrumbJsonLd(
+  [
+    { name: "Home", url: "/" },
+    { name: "Houston, TX", url: "/texas/houston/" },
+    { name: category.name, url: `/texas/houston/${category.slug}/` },
+    { name: provider.name, url: `/texas/houston/providers/${provider.slug}/` },
+  ],
+  Astro.site!,
+);
+---
+<Layout
+  title={provider.meta_title}
+  description={provider.meta_description}
+  ogImage={photo?.src}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" is:inline />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbs)} slot="head" is:inline />
+  <SiteHeader />
+
+  <nav class="border-b border-border bg-white py-3 text-xs text-muted-foreground">
+    <div class="mx-auto max-w-6xl px-6">
+      <a href="/" class="hover:text-brand-orange">Home</a> /
+      <a href="/texas/houston/" class="hover:text-brand-orange">Houston, TX</a> /
+      <a href={`/texas/houston/${category.slug}/`} class="hover:text-brand-orange">{category.name}</a> /
+      <span class="text-brand-dark">{provider.name}</span>
+    </div>
+  </nav>
+
+  <header class="bg-cream py-10">
+    <div class="mx-auto flex max-w-6xl flex-col gap-6 px-6 sm:flex-row">
+      <div class="h-32 w-32 flex-shrink-0 overflow-hidden rounded-lg bg-white sm:h-40 sm:w-40">
+        {photo && <Image src={photo} alt={provider.name} loading="eager" fetchpriority="high" class="h-full w-full object-cover" />}
+      </div>
+      <div class="flex-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-2xl font-bold text-brand-dark sm:text-3xl">{provider.name}</h1>
+          {provider.is_verified && (
+            <span class="inline-flex items-center gap-1 rounded-full bg-brand-green/15 px-2.5 py-1 text-xs font-semibold text-brand-green">
+              <ShieldCheck className="h-3.5 w-3.5" /> Verified Provider
+            </span>
+          )}
+        </div>
+        <p class="mt-1 font-semibold text-brand-orange">{category.name}</p>
+        <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          <span class="flex items-center gap-1"><MapPin className="h-4 w-4" /> {city.name}, TX{provider.accepts_teletherapy ? " · Teletherapy available" : ""}</span>
+          <span class="flex items-center gap-1"><Star className="h-4 w-4 fill-brand-orange text-brand-orange" /> {provider.rating_avg} ({provider.review_count} reviews)</span>
+        </div>
+        <p class="mt-3 text-brand-dark/80">{provider.tagline}</p>
+        {provider.accepting_new_clients && (
+          <span class="mt-3 inline-block rounded-full bg-brand-green/15 px-3 py-1 text-xs font-semibold text-brand-green">Accepting new clients</span>
+        )}
+      </div>
+    </div>
+  </header>
+
+  <div class="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-6 py-12 lg:grid-cols-[2fr_1fr]">
+    <main class="space-y-12">
+      <section>
+        <h2 class="text-xl font-bold text-brand-dark">About {provider.name}</h2>
+        <p class="mt-3 leading-relaxed text-brand-dark/80">{provider.bio}</p>
+        {provider.education && <p class="mt-3 text-sm text-muted-foreground">Education: {provider.education}</p>}
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-brand-dark">Hours</h2>
+        <table class="mt-3 w-full max-w-sm text-sm">
+          <tbody>
+            {hours.map((h) => (
+              <tr class="border-b border-border last:border-0">
+                <td class="py-1.5 text-brand-dark">{h.day}</td>
+                <td class="py-1.5 text-right text-muted-foreground">{h.label}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold text-brand-dark">Reviews ({reviews.length})</h2>
+        <div class="mt-4 space-y-4">
+          {reviews.map((r) => (
+            <div class="rounded-lg border border-border p-4">
+              <div class="flex items-center justify-between">
+                <p class="font-semibold text-brand-dark">{r.author_name}</p>
+                <div class="flex items-center gap-1 text-brand-orange">
+                  {Array.from({ length: r.rating }).map(() => <Star className="h-3.5 w-3.5 fill-brand-orange text-brand-orange" />)}
+                </div>
+              </div>
+              <p class="mt-2 text-sm text-brand-dark/80">{r.body}</p>
+              <p class="mt-2 text-xs text-muted-foreground">{r.created_at}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {faqs.length > 0 && (
+        <section>
+          <h2 class="text-xl font-bold text-brand-dark">Frequently asked questions about {category.name.replace(/\s*\(.*\)/, "")}s</h2>
+          <div class="mt-4 space-y-4">
+            {faqs.map((f) => (
+              <div>
+                <p class="font-semibold text-brand-dark">{f.question}</p>
+                <p class="mt-1 text-sm text-brand-dark/80">{f.answer}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {related.length > 0 && (
+        <section>
+          <h2 class="text-xl font-bold text-brand-dark">Other {category.name}s in the Houston area</h2>
+          <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {related.map((p) => {
+              const relCity = getCityBySlug(p.city_slug);
+              return (
+                <a href={`/texas/houston/providers/${p.slug}/`} class="rounded-lg border border-border p-4 hover:border-brand-orange">
+                  <p class="font-bold text-brand-dark">{p.name}</p>
+                  <p class="text-sm text-muted-foreground">{relCity?.name}, TX</p>
+                  <p class="mt-1 flex items-center gap-1 text-sm text-brand-dark">
+                    <Star className="h-3.5 w-3.5 fill-brand-orange text-brand-orange" /> {p.rating_avg} ({p.review_count})
+                  </p>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
+    </main>
+
+    <aside class="space-y-6">
+      <div class="rounded-lg border border-border p-5">
+        <h2 class="font-bold text-brand-dark">Quick facts</h2>
+        <dl class="mt-3 space-y-3 text-sm">
+          <div class="flex items-start gap-2">
+            <DollarSign className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-orange" />
+            <div><dt class="text-muted-foreground">Pricing</dt><dd class="font-semibold text-brand-dark">{priceLabel}</dd></div>
+          </div>
+          <div class="flex items-start gap-2">
+            <ClipboardCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-orange" />
+            <div><dt class="text-muted-foreground">Credentials</dt><dd class="font-semibold text-brand-dark">{credentials.map((c) => c.abbreviation).join(", ")}</dd></div>
+          </div>
+          <div class="flex items-start gap-2">
+            <Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-orange" />
+            <div><dt class="text-muted-foreground">Experience</dt><dd class="font-semibold text-brand-dark">{provider.years_experience} years</dd></div>
+          </div>
+          <div class="flex items-start gap-2">
+            <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-orange" />
+            <div><dt class="text-muted-foreground">Ages served</dt><dd class="font-semibold text-brand-dark">{ageGroups.map((a) => a.name).join(", ")}</dd></div>
+          </div>
+          <div class="flex items-start gap-2">
+            <LanguagesIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-orange" />
+            <div><dt class="text-muted-foreground">Languages</dt><dd class="font-semibold text-brand-dark">{languages.map((l) => l.name).join(", ")}</dd></div>
+          </div>
+          <div class="flex items-start gap-2">
+            <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-orange" />
+            <div><dt class="text-muted-foreground">Insurance accepted</dt><dd class="font-semibold text-brand-dark">{insurances.map((i) => i.name).join(", ")}</dd></div>
+          </div>
+        </dl>
+      </div>
+
+      <div class="rounded-lg border border-border p-5">
+        <h2 class="font-bold text-brand-dark">Contact</h2>
+        <div class="mt-3 space-y-2 text-sm">
+          <a href={`tel:${provider.phone}`} class="flex items-center gap-2 text-brand-dark hover:text-brand-orange"><Phone className="h-4 w-4" /> {provider.phone}</a>
+          <a href={`mailto:${provider.email}`} class="flex items-center gap-2 text-brand-dark hover:text-brand-orange"><Mail className="h-4 w-4" /> {provider.email}</a>
+          <a href={provider.website_url} rel="nofollow noopener noreferrer" target="_blank" class="flex items-center gap-2 text-brand-dark hover:text-brand-orange"><Globe className="h-4 w-4" /> Visit website</a>
+          <p class="flex items-start gap-2 pt-1 text-muted-foreground"><MapPin className="h-4 w-4 flex-shrink-0" /> {provider.address_line1}, {city.name}, TX {provider.postal_code}</p>
+        </div>
+        <a href="#" class="mt-4 block rounded-md bg-brand-orange px-4 py-2.5 text-center font-semibold text-white hover:opacity-90">Request a consultation</a>
+      </div>
+    </aside>
+  </div>
+
+  <SiteFooter />
+</Layout>

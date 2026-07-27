@@ -1,0 +1,12 @@
+[
+  { "id": "english", "name": "English", "code": "en", "slug": "english" },
+  { "id": "spanish", "name": "Spanish", "code": "es", "slug": "spanish" },
+  { "id": "vietnamese", "name": "Vietnamese", "code": "vi", "slug": "vietnamese" },
+  { "id": "mandarin-chinese", "name": "Mandarin Chinese", "code": "zh", "slug": "mandarin-chinese" },
+  { "id": "arabic", "name": "Arabic", "code": "ar", "slug": "arabic" },
+  { "id": "french", "name": "French", "code": "fr", "slug": "french" },
+  { "id": "tagalog", "name": "Tagalog", "code": "tl", "slug": "tagalog" },
+  { "id": "urdu", "name": "Urdu", "code": "ur", "slug": "urdu" },
+  { "id": "hindi", "name": "Hindi", "code": "hi", "slug": "hindi" },
+  { "id": "american-sign-language", "name": "American Sign Language", "code": "ase", "slug": "american-sign-language" }
+]

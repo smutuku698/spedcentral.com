@@ -1,0 +1,80 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { getActiveServiceCategories, getProvidersByCategoryInMetro, getServiceCategoryBySlug } from "@/lib/data";
+import { breadcrumbJsonLd } from "@/lib/seo";
+
+const categories = getActiveServiceCategories("houston").map((c) => ({
+  ...c,
+  providerCount: getProvidersByCategoryInMetro(c.slug, "houston").length,
+}));
+
+// Group headers (e.g. "Medical & Clinical Therapists") for the categories
+// that actually have listings, so the page reads as organized sections
+// rather than one flat grid.
+const groupSlugs = [...new Set(categories.map((c) => c.parent_id!))];
+const groups = groupSlugs.map((slug) => ({
+  group: getServiceCategoryBySlug(slug)!,
+  categories: categories.filter((c) => c.parent_id === slug),
+}));
+
+const breadcrumbs = breadcrumbJsonLd([{ name: "Home", url: "/" }, { name: "Houston, TX", url: "/texas/houston/" }], Astro.site!);
+---
+<Layout
+  title="Special Education Providers in Houston, TX | SpedCentral"
+  description="Browse verified special education providers across the Houston metro, organized by specialty -- speech therapy, ABA, dyslexia tutoring, and more."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbs)} slot="head" is:inline />
+  <SiteHeader />
+
+  <nav class="border-b border-border bg-white py-3 text-xs text-muted-foreground">
+    <div class="mx-auto max-w-6xl px-6">
+      <a href="/" class="hover:text-brand-orange">Home</a> /
+      <span class="text-brand-dark">Houston, TX</span>
+    </div>
+  </nav>
+
+  <header class="bg-cream py-12">
+    <div class="mx-auto max-w-6xl px-6">
+      <h1 class="text-3xl font-bold text-brand-dark md:text-4xl">Special Education Providers in Houston, TX</h1>
+      <p class="mt-4 max-w-3xl text-brand-dark/80">
+        Every provider listed here -- across Houston, Sugar Land, Katy, and the surrounding metro -- is reviewed for
+        credentials and licensing before appearing on SpedCentral. Browse by specialty below.
+      </p>
+      <p class="mt-3 flex items-center gap-2 text-sm font-semibold text-brand-green">
+        <ShieldCheck className="h-4 w-4" /> {categories.reduce((sum, c) => sum + c.providerCount, 0)} verified providers across {categories.length} specialties
+      </p>
+    </div>
+  </header>
+
+  <div class="mx-auto max-w-6xl px-6 py-12">
+    {groups.map((g) => (
+      <section id={g.group.slug} class="mb-12 scroll-mt-16">
+        <h2 class="text-xl font-bold text-brand-dark">{g.group.name}</h2>
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {g.categories.map((c) => (
+            <a href={`/texas/houston/${c.slug}/`} class="flex items-center justify-between rounded-lg border border-border bg-white p-4 hover:border-brand-orange">
+              <div>
+                <p class="font-bold text-brand-dark">{c.name}</p>
+                <p class="text-sm text-muted-foreground">{c.providerCount} {c.providerCount === 1 ? "provider" : "providers"}</p>
+              </div>
+              <ArrowRight className="h-4 w-4 flex-shrink-0 text-brand-orange" />
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <div class="rounded-lg bg-cream p-8 text-center">
+      <h2 class="text-xl font-bold text-brand-dark">Don't see the specialty you're looking for?</h2>
+      <p class="mt-2 text-sm text-muted-foreground">We're adding new Houston-area providers every week across every SPED specialty.</p>
+      <a href="/list-your-practice/" class="mt-4 inline-flex items-center rounded-md bg-brand-orange px-6 py-2.5 font-semibold text-white hover:opacity-90">
+        Know a great provider? Suggest them <ArrowRight className="ml-1 h-4 w-4" />
+      </a>
+    </div>
+  </div>
+
+  <SiteFooter />
+</Layout>

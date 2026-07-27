@@ -1,0 +1,59 @@
+---
+// Reads from src/data/*.json via src/lib/data.ts today. That data-access
+// layer is written to mirror a query against the `public_providers` view
+// (see supabase/schema.sql), so swapping to real Supabase later means
+// rewriting data.ts's function bodies only -- this component doesn't change.
+import { Star, MapPin } from "lucide-react";
+import { Image } from "astro:assets";
+import { getFeaturedProviders, getCityBySlug, getServiceCategoryBySlug } from "@/lib/data";
+import { resolveAssetImage } from "@/lib/images";
+
+const featured = getFeaturedProviders(3);
+
+// A thin top-edge accent, cycled per card -- a restrained design touch, not
+// a rainbow effect. Reuses the existing muted brand palette so it stays
+// consistent with the rest of the site rather than introducing new colors.
+const accents = ["bg-brand-orange", "bg-brand-purple", "bg-brand-green", "bg-brand-pink"];
+---
+<section class="bg-white py-16">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="flex items-end justify-between">
+      <div>
+        <h2 class="text-3xl font-bold text-brand-dark">Featured providers</h2>
+        <p class="mt-2 text-sm text-muted-foreground">Sponsored placements from providers who've chosen to feature their listing. Every provider is still reviewed for credentials before appearing on SpedCentral.</p>
+      </div>
+      <a href="/texas/houston/" class="hidden text-sm font-semibold text-brand-orange hover:underline sm:block">See all Houston providers &rarr;</a>
+    </div>
+    <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {featured.map((p, i) => {
+        const city = getCityBySlug(p.city_slug);
+        const category = getServiceCategoryBySlug(p.category_slugs[0]);
+        const photo = resolveAssetImage(p.photo_file);
+        return (
+          <a href={`/texas/houston/providers/${p.slug}/`} class="group overflow-hidden rounded-lg border border-border bg-white shadow-sm transition hover:shadow-md">
+            <div class={`h-[3px] w-full ${accents[i % accents.length]}`}></div>
+            <div class="relative h-40 w-full overflow-hidden bg-cream">
+              {photo && <Image src={photo} alt={p.name} class="h-full w-full object-cover" />}
+              <span class="absolute left-3 top-3 rounded border border-black/10 bg-white/95 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Sponsored
+              </span>
+            </div>
+            <div class="p-4">
+              <h3 class="font-bold text-brand-dark group-hover:text-brand-orange">{p.name}</h3>
+              <p class="text-sm font-semibold text-brand-green">{category?.name}</p>
+              <p class="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0" /> {city?.name}, TX
+              </p>
+              <p class="mt-2 text-sm text-brand-dark/80">{p.tagline}</p>
+              <div class="mt-3 flex items-center gap-1 text-sm text-brand-dark">
+                <Star className="h-4 w-4 fill-brand-orange text-brand-orange" />
+                <span class="font-semibold">{p.rating_avg}</span>
+                <span class="text-muted-foreground">({p.review_count} reviews)</span>
+              </div>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+</section>

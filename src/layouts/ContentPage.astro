@@ -1,0 +1,33 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  lastUpdated?: string;
+}
+
+const { title, description, heading, lastUpdated } = Astro.props;
+---
+<Layout title={title} description={description}>
+  <SiteHeader />
+
+  <nav class="border-b border-border bg-white py-3 text-xs text-muted-foreground">
+    <div class="mx-auto max-w-3xl px-6">
+      <a href="/" class="hover:text-brand-orange">Home</a> / <span class="text-brand-dark">{heading}</span>
+    </div>
+  </nav>
+
+  <div class="mx-auto max-w-3xl px-6 py-12">
+    <h1 class="text-3xl font-bold text-brand-dark">{heading}</h1>
+    {lastUpdated && <p class="mt-2 text-sm text-muted-foreground">Last updated: {lastUpdated}</p>}
+    <div class="legal-content text-brand-dark/80">
+      <slot />
+    </div>
+  </div>
+
+  <SiteFooter />
+</Layout>

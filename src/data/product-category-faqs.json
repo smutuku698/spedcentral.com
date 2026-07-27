@@ -1,0 +1,18 @@
+{
+  "sensory-integration-regulation": [
+    { "question": "What are sensory integration products used for?", "answer": "These products help children with sensory processing differences, ADHD, or autism regulate their nervous system -- through deep pressure, movement, or fidgeting -- so they can focus and stay calm during the day." },
+    { "question": "Are weighted blankets and vests safe for children?", "answer": "Most pediatric occupational therapists recommend a weighted item be no more than about 10% of a child's body weight, and that children under 2 avoid weighted blankets. Check with your child's therapist for a personalized recommendation." }
+  ],
+  "assistive-technology-communication": [
+    { "question": "What is AAC?", "answer": "Augmentative and Alternative Communication (AAC) refers to any tool -- from picture boards to speech-generating apps -- that supplements or replaces spoken communication for people who are non-verbal or have limited verbal ability." },
+    { "question": "Do I need a prescription for an AAC device?", "answer": "Dedicated speech-generating devices are sometimes covered by insurance with a prescription and an SLP evaluation, but AAC apps for a personal tablet can usually be purchased directly without one." }
+  ],
+  "adaptive-classroom-learning-tools": [
+    { "question": "What are visual supports and why do teachers use them?", "answer": "Visual supports -- schedules, timers, and choice boards -- give students a concrete, predictable way to understand what's happening next, which reduces anxiety and behavior challenges tied to transitions." },
+    { "question": "Can I customize printable classroom tools for my own students?", "answer": "Most digital downloads in this category are provided as editable PDFs specifically so teachers and parents can relabel or reorder them to match their own routines." }
+  ],
+  "daily-living-independent-skills": [
+    { "question": "What are adaptive daily living tools?", "answer": "These are everyday products -- utensils, clothing, safety devices -- modified to make routines like eating, dressing, and staying safe more manageable for someone with a physical, sensory, or developmental difference." },
+    { "question": "How do I know which adaptive tool is right for my child?", "answer": "An occupational therapist can assess your child's specific fine motor, sensory, or safety needs and recommend the right type of adaptive tool -- many products in this catalog are also OT-recommended." }
+  ]
+}

@@ -1,0 +1,129 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import { Image } from "astro:assets";
+import { Star, MapPin, ArrowRight } from "lucide-react";
+import {
+  getServiceCategoryBySlug, getProvidersByCategoryInMetro, getServiceCategoryFaqs, getCityBySlug,
+  getActiveServiceCategories,
+} from "@/lib/data";
+import { resolveAssetImage } from "@/lib/images";
+import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/seo";
+
+// Only categories with at least one real provider get a page -- an empty
+// "Feeding Therapists in Houston, TX" page with zero listings is exactly
+// the kind of thin content that keeps a new domain from ranking. As more
+// providers are added, more of these pages generate automatically.
+// getActiveServiceCategories() is the same function the homepage category
+// bar and footer use, so this list can never drift out of sync with what's
+// actually linked elsewhere on the site.
+export function getStaticPaths() {
+  return getActiveServiceCategories("houston").map((c) => ({
+    params: { category: c.slug },
+    props: { providers: getProvidersByCategoryInMetro(c.slug, "houston") },
+  }));
+}
+
+const { category: categorySlug } = Astro.params;
+const { providers } = Astro.props;
+const category = getServiceCategoryBySlug(categorySlug!)!;
+const faqs = getServiceCategoryFaqs(category.slug);
+// Strip parentheticals like "(ABA / BCBA / RBT)" for the <title> tag --
+// full name still displays in the on-page H1, but titles need to fit
+// Google's ~60-character display limit.
+const shortName = category.name.replace(/\s*\(.*\)/, "");
+const breadcrumbs = breadcrumbJsonLd(
+  [
+    { name: "Home", url: "/" },
+    { name: "Houston, TX", url: "/texas/houston/" },
+    { name: category.name, url: `/texas/houston/${category.slug}/` },
+  ],
+  Astro.site!,
+);
+const providerList = itemListJsonLd(
+  providers.map((p) => ({ name: p.name, url: `/texas/houston/providers/${p.slug}/` })),
+  Astro.site!,
+);
+---
+<Layout
+  title={`Find a ${shortName} in Houston, TX`}
+  description={category.meta_description ?? `Browse verified ${shortName}s serving the Houston metro area.`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbs)} slot="head" is:inline />
+  <script type="application/ld+json" set:html={JSON.stringify(providerList)} slot="head" is:inline />
+  <SiteHeader />
+
+  <nav class="border-b border-border bg-white py-3 text-xs text-muted-foreground">
+    <div class="mx-auto max-w-6xl px-6">
+      <a href="/" class="hover:text-brand-orange">Home</a> /
+      <a href="/texas/houston/" class="hover:text-brand-orange">Houston, TX</a> /
+      <span class="text-brand-dark">{category.name}</span>
+    </div>
+  </nav>
+
+  <header class="bg-cream py-12">
+    <div class="mx-auto max-w-6xl px-6">
+      <h1 class="text-3xl font-bold text-brand-dark md:text-4xl">Find a {category.name} in Houston, TX</h1>
+      <p class="mt-4 max-w-3xl text-brand-dark/80">{category.short_description}</p>
+      <p class="mt-3 text-sm font-semibold text-brand-green">{providers.length} verified {providers.length === 1 ? "provider" : "providers"} in the Houston area</p>
+    </div>
+  </header>
+
+  <div class="mx-auto max-w-6xl px-6 py-12">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {providers.map((p) => {
+        const city = getCityBySlug(p.city_slug);
+        const photo = resolveAssetImage(p.photo_file);
+        return (
+          <a href={`/texas/houston/providers/${p.slug}/`} class="group overflow-hidden rounded-lg border border-border bg-white shadow-sm transition hover:shadow-md">
+            <div class="relative h-40 w-full overflow-hidden bg-cream">
+              {photo && <Image src={photo} alt={p.name} class="h-full w-full object-cover" />}
+              {p.is_featured && (
+                <span class="absolute left-3 top-3 rounded border border-black/10 bg-white/95 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Sponsored
+                </span>
+              )}
+            </div>
+            <div class="p-4">
+              <h2 class="font-bold text-brand-dark group-hover:text-brand-orange">{p.name}</h2>
+              <p class="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0" /> {city?.name}, TX
+              </p>
+              <p class="mt-2 text-sm text-brand-dark/80">{p.tagline}</p>
+              <div class="mt-3 flex items-center gap-1 text-sm text-brand-dark">
+                <Star className="h-4 w-4 fill-brand-orange text-brand-orange" />
+                <span class="font-semibold">{p.rating_avg}</span>
+                <span class="text-muted-foreground">({p.review_count} reviews)</span>
+              </div>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+
+    {faqs.length > 0 && (
+      <section class="mt-16 max-w-3xl">
+        <h2 class="text-2xl font-bold text-brand-dark">Frequently asked questions</h2>
+        <div class="mt-6 space-y-5">
+          {faqs.map((f) => (
+            <div>
+              <p class="font-semibold text-brand-dark">{f.question}</p>
+              <p class="mt-1 text-sm text-brand-dark/80">{f.answer}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <div class="mt-16 rounded-lg bg-cream p-8 text-center">
+      <h2 class="text-xl font-bold text-brand-dark">Are you a {category.name} in the Houston area?</h2>
+      <p class="mt-2 text-sm text-muted-foreground">Get in front of families searching for exactly what you offer.</p>
+      <a href="/list-your-practice/" class="mt-4 inline-flex items-center rounded-md bg-brand-orange px-6 py-2.5 font-semibold text-white hover:opacity-90">
+        List your practice <ArrowRight className="ml-1 h-4 w-4" />
+      </a>
+    </div>
+  </div>
+
+  <SiteFooter />
+</Layout>

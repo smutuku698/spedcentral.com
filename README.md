@@ -1,29 +1,38 @@
-# Welcome to your Lovable project
+# SpedCentral
 
-This project was built with [Lovable](https://lovable.dev).
+A directory of special education providers, specialists, and products —
+launching in Houston, TX, built to expand nationwide.
 
-## Build with Lovable
+## Stack
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Astro + Tailwind CSS** — static-first for speed and SEO, deployed on Vercel
+- **Supabase (Postgres)** — providers, products, categories, reviews (see `supabase/`)
+- **Cloudflare R2** — provider photos, logos, product images
+- Editorial content (guides, IEP help) lives as Astro content collections, not the database
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+npm install
+cp .env.example .env   # fill in your Supabase project URL + anon key
 npm run dev
 ```
 
-## Built with
+## Database
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+`supabase/schema.sql` — full table/RLS definitions.
+`supabase/seed_categories.sql` — reference data + the full service/product category taxonomy.
+
+Run both in the Supabase SQL editor, in that order, when setting up a new project.
+
+## Project structure
+
+```
+src/
+  components/   Astro components (homepage sections, shared UI)
+  layouts/      Base page layout with SEO meta defaults
+  lib/          Supabase client
+  pages/        Routes (file-based)
+  styles/       Tailwind v4 global stylesheet + design tokens
+supabase/       SQL schema + seed data
+```

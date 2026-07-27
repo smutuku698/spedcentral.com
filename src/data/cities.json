@@ -1,0 +1,12 @@
+[
+  { "id": "houston", "state_id": "texas", "name": "Houston", "slug": "houston", "is_metro_hub": true, "metro_id": null, "latitude": 29.7604, "longitude": -95.3698 },
+  { "id": "sugar-land", "state_id": "texas", "name": "Sugar Land", "slug": "sugar-land", "is_metro_hub": false, "metro_id": "houston", "latitude": 29.6197, "longitude": -95.6349 },
+  { "id": "katy", "state_id": "texas", "name": "Katy", "slug": "katy", "is_metro_hub": false, "metro_id": "houston", "latitude": 29.7858, "longitude": -95.8244 },
+  { "id": "the-woodlands", "state_id": "texas", "name": "The Woodlands", "slug": "the-woodlands", "is_metro_hub": false, "metro_id": "houston", "latitude": 30.1658, "longitude": -95.4613 },
+  { "id": "pearland", "state_id": "texas", "name": "Pearland", "slug": "pearland", "is_metro_hub": false, "metro_id": "houston", "latitude": 29.5636, "longitude": -95.286 },
+  { "id": "cypress", "state_id": "texas", "name": "Cypress", "slug": "cypress", "is_metro_hub": false, "metro_id": "houston", "latitude": 29.9691, "longitude": -95.6972 },
+  { "id": "spring", "state_id": "texas", "name": "Spring", "slug": "spring", "is_metro_hub": false, "metro_id": "houston", "latitude": 30.0799, "longitude": -95.4172 },
+  { "id": "pasadena", "state_id": "texas", "name": "Pasadena", "slug": "pasadena", "is_metro_hub": false, "metro_id": "houston", "latitude": 29.6911, "longitude": -95.209 },
+  { "id": "league-city", "state_id": "texas", "name": "League City", "slug": "league-city", "is_metro_hub": false, "metro_id": "houston", "latitude": 29.4996, "longitude": -95.0947 },
+  { "id": "missouri-city", "state_id": "texas", "name": "Missouri City", "slug": "missouri-city", "is_metro_hub": false, "metro_id": "houston", "latitude": 29.6186, "longitude": -95.5377 }
+]

@@ -1,0 +1,31 @@
+---
+import { Video, Users, Award } from "lucide-react";
+import onlineLessons from "@/assets/online-lessons.jpg";
+import { Image } from "astro:assets";
+
+const stats = [
+  { icon: Video, num: "Teletherapy", label: "available statewide" },
+  { icon: Users, num: "Houston metro", label: "and growing" },
+  { icon: Award, num: "Verified", label: "credentials & licensing" },
+];
+---
+<section class="relative overflow-hidden">
+  <Image src={onlineLessons} alt="Teletherapy session" width={1600} height={700} class="h-[420px] w-full object-cover" />
+  <div class="absolute inset-0 bg-brand-dark/60"></div>
+  <div class="absolute inset-0 flex items-center">
+    <div class="mx-auto flex max-w-6xl flex-col gap-6 px-6 text-white">
+      <h2 class="text-3xl font-bold md:text-4xl">
+        In-person or teletherapy.<br /><span class="highlight-mark">Support that fits your family.</span>
+      </h2>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {stats.map((s) => (
+          <div class="flex items-center gap-3 rounded-lg bg-white px-5 py-4 text-brand-dark">
+            <span class="text-brand-orange"><s.icon className="h-5 w-5" /></span>
+            <div><div class="text-xl font-bold">{s.num}</div><div class="text-sm text-muted-foreground">{s.label}</div></div>
+          </div>
+        ))}
+      </div>
+      <p class="text-sm">Filter any search by teletherapy availability to find specialists who meet with families virtually.</p>
+    </div>
+  </div>
+</section>

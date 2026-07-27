@@ -1,0 +1,83 @@
+---
+// Shows the full breadth of the taxonomy -- all Houston-metro cities, a
+// representative spread of specialties, every product category -- straight
+// from the data files, not hand-typed strings. This is the site's full
+// intended footprint (all 50 states eventually), so a category or city
+// without a live page yet still gets linked here; the page gets built out
+// once there's real content behind it.
+import { getAllServiceCategoryLeaves, getProductCategoryGroups, getCitiesInMetro, getCityBySlug } from "@/lib/data";
+
+const services = getAllServiceCategoryLeaves().slice(0, 12);
+const productGroups = getProductCategoryGroups();
+const houston = getCityBySlug("houston")!;
+const locations = [houston, ...getCitiesInMetro("houston")];
+---
+<footer class="bg-brand-dark py-14 text-white/80">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
+      <div>
+        <h4 class="text-sm font-bold text-white">GET TO KNOW US</h4>
+        <ul class="mt-4 space-y-2 text-sm">
+          <li><a href="/about/" class="hover:text-white">About Us</a></li>
+          <li><a href="/contact/" class="hover:text-white">Contact Us</a></li>
+          <li><a href="/faq/" class="hover:text-white">FAQ</a></li>
+          <li><a href="/how-we-verify-providers/" class="hover:text-white">How We Verify Providers</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-white">FOR FAMILIES</h4>
+        <ul class="mt-4 space-y-2 text-sm">
+          <li><a href="/texas/houston/" class="hover:text-white">Find a Provider</a></li>
+          <li><a href="/products/" class="hover:text-white">Shop Products</a></li>
+          <li><a href="/resources/" class="hover:text-white">Guides &amp; Resources</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-white">FOR PROVIDERS</h4>
+        <ul class="mt-4 space-y-2 text-sm">
+          <li><a href="/list-your-practice/" class="hover:text-white">List Your Practice</a></li>
+          <li><a href="/sell-your-products/" class="hover:text-white">Sell Your Products</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-white">PRODUCT CATEGORIES</h4>
+        <ul class="mt-4 space-y-2 text-sm">
+          {productGroups.map((g) => (
+            <li><a href={`/products/${g.slug}/`} class="hover:text-white">{g.name}</a></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-10 grid grid-cols-1 gap-8 border-t border-white/10 pt-8 text-xs md:grid-cols-2">
+      <div>
+        <h4 class="mb-3 font-bold text-white">PROVIDERS BY SPECIALTY</h4>
+        <div class="grid grid-cols-2 gap-y-2">
+          {services.map((s) => (
+            <a href={`/texas/houston/${s.slug}/`} class="hover:text-white">{s.name}</a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h4 class="mb-3 font-bold text-white">PROVIDERS BY LOCATION</h4>
+        <div class="grid grid-cols-2 gap-y-2">
+          {locations.map((city) => (
+            <a href={`/texas/${city.slug}/`} class="hover:text-white">{city.name} Providers</a>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 border-t border-white/10 pt-6 text-center text-xs text-white/60">
+      <p>&copy; {new Date().getFullYear()} SpedCentral, Inc. — All Rights Reserved.</p>
+      <div class="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+        <a href="/sitemap-index.xml" class="hover:text-white">Sitemap</a><span aria-hidden="true">&middot;</span>
+        <a href="/terms-of-use/" class="hover:text-white">Terms of Use</a><span aria-hidden="true">&middot;</span>
+        <a href="/privacy-policy/" class="hover:text-white">Privacy Policy</a><span aria-hidden="true">&middot;</span>
+        <a href="/cookie-policy/" class="hover:text-white">Cookie Policy</a><span aria-hidden="true">&middot;</span>
+        <a href="/accessibility-statement/" class="hover:text-white">Accessibility</a><span aria-hidden="true">&middot;</span>
+        <a href="/affiliate-disclosure/" class="hover:text-white">Affiliate Disclosure</a>
+      </div>
+    </div>
+  </div>
+</footer>

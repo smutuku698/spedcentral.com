@@ -1,0 +1,68 @@
+---
+import ContentPage from "@/layouts/ContentPage.astro";
+
+// Strip HTML for the JSON-LD answer text -- schema.org's `text` property
+// wants plain text, not markup, even though the on-page rendering uses
+// set:html for the clickable links.
+function stripHtml(html: string) {
+  return html.replace(/<[^>]+>/g, "");
+}
+
+const faqs = [
+  {
+    q: "Is SpedCentral free for families?",
+    a: "Yes. Searching, browsing providers, reading reviews, and contacting a provider through SpedCentral is completely free for families. We make money from optional paid placements for providers and affiliate/creator commissions on some products -- never from families.",
+  },
+  {
+    q: "How are providers verified?",
+    a: "Every provider goes through a credential and licensing review before their listing goes live. See exactly what that involves on our <a href=\"/how-we-verify-providers/\">How We Verify Providers</a> page.",
+  },
+  {
+    q: "What does \"Sponsored\" mean on a listing?",
+    a: "It means that provider or product paid for featured placement. It does not mean we skipped credential verification -- every provider is reviewed the same way whether or not they pay for placement. We label sponsored listings clearly so you always know the difference.",
+  },
+  {
+    q: "Do you only cover Houston?",
+    a: "Right now, yes -- we're deliberately starting deep in one metro rather than thin across the whole country. We're expanding to new Texas metros and then other states over time. If your city isn't listed yet, check back soon or <a href=\"/contact/\">let us know</a> you'd like to see it added.",
+  },
+  {
+    q: "How do I list my practice on SpedCentral?",
+    a: "Visit <a href=\"/list-your-practice/\">List Your Practice</a> to submit your information. Every submission is reviewed before it's published -- we don't publish unverified listings.",
+  },
+  {
+    q: "Can I remove my listing or request a correction?",
+    a: "Yes. Email <a href=\"mailto:providers@spedcentral.com\">providers@spedcentral.com</a> with your listing name and what needs to change, and we'll take care of it.",
+  },
+  {
+    q: "Do providers on SpedCentral accept my insurance?",
+    a: "It varies by provider -- each profile lists the insurance plans and payment methods that specific provider accepts. Always confirm directly with the provider before booking, since coverage can change.",
+  },
+  {
+    q: "Are the product links affiliate links?",
+    a: "Some are. See our <a href=\"/affiliate-disclosure/\">Affiliate Disclosure</a> for the full details -- in short, some purchases earn us a small commission at no extra cost to you, and it never affects which products we choose to feature.",
+  },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: stripHtml(f.a) },
+  })),
+};
+---
+<ContentPage
+  title="FAQ | SpedCentral"
+  description="Answers to common questions about how SpedCentral works, how providers are verified, and how to list your practice or products."
+  heading="Frequently Asked Questions"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+  {faqs.map((f) => (
+    <>
+      <h2>{f.q}</h2>
+      <p set:html={f.a} />
+    </>
+  ))}
+</ContentPage>

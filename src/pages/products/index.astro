@@ -1,0 +1,68 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import { ArrowRight } from "lucide-react";
+import { getActiveProductCategoryGroups, getProductsByCategory } from "@/lib/data";
+import { productIcons, iconKeyFromSlug } from "@/lib/icons";
+import { breadcrumbJsonLd } from "@/lib/seo";
+
+const groups = getActiveProductCategoryGroups().map((g) => ({
+  ...g,
+  productCount: getProductsByCategory(g.slug).length,
+}));
+
+const breadcrumbs = breadcrumbJsonLd([{ name: "Home", url: "/" }, { name: "Products", url: "/products/" }], Astro.site!);
+---
+<Layout
+  title="Shop SPED Products & Tools | SpedCentral"
+  description="Sensory tools, assistive technology, adaptive classroom supplies, and daily-living aids for special education students, teachers, and adults."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbs)} slot="head" is:inline />
+  <SiteHeader />
+
+  <nav class="border-b border-border bg-white py-3 text-xs text-muted-foreground">
+    <div class="mx-auto max-w-6xl px-6">
+      <a href="/" class="hover:text-brand-orange">Home</a> /
+      <span class="text-brand-dark">Products</span>
+    </div>
+  </nav>
+
+  <header class="bg-cream py-12">
+    <div class="mx-auto max-w-6xl px-6">
+      <h1 class="text-3xl font-bold text-brand-dark md:text-4xl">Tools &amp; Products for Every Learner</h1>
+      <p class="mt-4 max-w-3xl text-brand-dark/80">
+        Sensory tools, assistive technology, adaptive classroom supplies, and daily-living aids -- picked for real
+        impact, organized by category.
+      </p>
+    </div>
+  </header>
+
+  <div class="mx-auto max-w-6xl px-6 py-12">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {groups.map((g) => {
+        const Icon = productIcons[iconKeyFromSlug(g.icon ?? "")];
+        return (
+          <a href={`/products/${g.slug}/`} class="rounded-lg border border-border bg-white p-6 hover:border-brand-orange">
+            {Icon && <Icon className="h-8 w-8 text-brand-orange" />}
+            <h2 class="mt-3 font-bold text-brand-dark">{g.name}</h2>
+            <p class="mt-1 text-sm text-muted-foreground">{g.productCount} {g.productCount === 1 ? "product" : "products"}</p>
+            <p class="mt-3 flex items-center gap-1 text-sm font-semibold text-brand-orange">
+              Browse <ArrowRight className="h-3.5 w-3.5" />
+            </p>
+          </a>
+        );
+      })}
+    </div>
+
+    <div class="mt-16 rounded-lg bg-cream p-8 text-center">
+      <h2 class="text-xl font-bold text-brand-dark">Make something families need?</h2>
+      <p class="mt-2 text-sm text-muted-foreground">List an affiliate product or sell your own printables and digital resources on SpedCentral.</p>
+      <a href="/sell-your-products/" class="mt-4 inline-flex items-center rounded-md bg-brand-orange px-6 py-2.5 font-semibold text-white hover:opacity-90">
+        Sell on SpedCentral <ArrowRight className="ml-1 h-4 w-4" />
+      </a>
+    </div>
+  </div>
+
+  <SiteFooter />
+</Layout>

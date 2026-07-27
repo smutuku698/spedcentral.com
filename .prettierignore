@@ -1,8 +1,5 @@
 node_modules
 dist
-.output
-.vinxi
-pnpm-lock.yaml
+.astro
 package-lock.json
-bun.lock
-routeTree.gen.ts
+venture-vista-43

@@ -1,0 +1,12 @@
+[
+  { "id": "aetna", "name": "Aetna", "slug": "aetna" },
+  { "id": "blue-cross-blue-shield", "name": "Blue Cross Blue Shield", "slug": "blue-cross-blue-shield" },
+  { "id": "cigna", "name": "Cigna", "slug": "cigna" },
+  { "id": "unitedhealthcare", "name": "UnitedHealthcare", "slug": "unitedhealthcare" },
+  { "id": "humana", "name": "Humana", "slug": "humana" },
+  { "id": "medicaid", "name": "Medicaid", "slug": "medicaid" },
+  { "id": "medicare", "name": "Medicare", "slug": "medicare" },
+  { "id": "tricare", "name": "TRICARE", "slug": "tricare" },
+  { "id": "self-pay", "name": "Self-Pay / Private Pay", "slug": "self-pay" },
+  { "id": "sliding-scale", "name": "Sliding Scale Fee", "slug": "sliding-scale" }
+]

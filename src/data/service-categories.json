@@ -1,0 +1,56 @@
+[
+  { "id": "medical-clinical-therapists", "parent_id": null, "name": "Medical & Clinical Therapists", "slug": "medical-clinical-therapists", "icon": "stethoscope", "display_order": 10 },
+  { "id": "academic-school-based-specialists", "parent_id": null, "name": "Academic & School-Based Specialists", "slug": "academic-school-based-specialists", "icon": "graduation-cap", "display_order": 20 },
+  { "id": "legal-advocacy-family-support", "parent_id": null, "name": "Legal, Advocacy & Family Support", "slug": "legal-advocacy-family-support", "icon": "scale", "display_order": 30 },
+  { "id": "early-intervention-childcare", "parent_id": null, "name": "Early Intervention & Childcare", "slug": "early-intervention-childcare", "icon": "baby", "display_order": 40 },
+  { "id": "adult-transition-services", "parent_id": null, "name": "Adult & Transition Services", "slug": "adult-transition-services", "icon": "briefcase", "display_order": 50 },
+  { "id": "recreation-community", "parent_id": null, "name": "Recreation & Community", "slug": "recreation-community", "icon": "tent", "display_order": 60 },
+  { "id": "facilities-programs", "parent_id": null, "name": "Facilities & Programs", "slug": "facilities-programs", "icon": "building", "display_order": 70 },
+
+  { "id": "speech-language-pathologist", "parent_id": "medical-clinical-therapists", "name": "Speech-Language Pathologist (SLP)", "slug": "speech-language-pathologist", "icon": "mic", "display_order": 1, "short_description": "Speech-language pathologists (SLPs) help children with articulation, language delays, stuttering, and augmentative and alternative communication (AAC) devices. Houston families typically start here after a pediatrician referral or a school speech-language screening flags a delay.", "meta_description": "Find verified speech-language pathologists in Houston, TX for articulation, language delays, and AAC device support." },
+  { "id": "occupational-therapist", "parent_id": "medical-clinical-therapists", "name": "Occupational Therapist (OT)", "slug": "occupational-therapist", "icon": "hand", "display_order": 2 },
+  { "id": "physical-therapist", "parent_id": "medical-clinical-therapists", "name": "Physical Therapist (PT)", "slug": "physical-therapist", "icon": "activity", "display_order": 3 },
+  { "id": "behavioral-therapist-aba", "parent_id": "medical-clinical-therapists", "name": "Behavioral Therapist (ABA / BCBA / RBT)", "slug": "behavioral-therapist-aba", "icon": "puzzle", "display_order": 4, "short_description": "Applied Behavior Analysis (ABA) therapists -- BCBAs who design treatment plans and RBTs who deliver day-to-day sessions -- work primarily with autistic children on communication, social, and daily-living skills. Houston has both center-based and in-home ABA providers.", "meta_description": "Find verified ABA therapists, BCBAs, and RBTs in Houston, TX for autism behavioral therapy and skill-building." },
+  { "id": "child-psychologist-neuropsychologist", "parent_id": "medical-clinical-therapists", "name": "Child Psychologist & Neuropsychologist", "slug": "child-psychologist-neuropsychologist", "icon": "brain", "display_order": 5 },
+  { "id": "developmental-pediatrician", "parent_id": "medical-clinical-therapists", "name": "Developmental Pediatrician", "slug": "developmental-pediatrician", "icon": "stethoscope", "display_order": 6 },
+  { "id": "feeding-therapist", "parent_id": "medical-clinical-therapists", "name": "Feeding Therapist", "slug": "feeding-therapist", "icon": "utensils", "display_order": 7 },
+  { "id": "vision-therapist", "parent_id": "medical-clinical-therapists", "name": "Vision Therapist", "slug": "vision-therapist", "icon": "eye", "display_order": 8 },
+  { "id": "music-therapist", "parent_id": "medical-clinical-therapists", "name": "Music Therapist", "slug": "music-therapist", "icon": "music", "display_order": 9 },
+  { "id": "art-therapist", "parent_id": "medical-clinical-therapists", "name": "Art Therapist", "slug": "art-therapist", "icon": "palette", "display_order": 10 },
+  { "id": "play-therapist", "parent_id": "medical-clinical-therapists", "name": "Play Therapist", "slug": "play-therapist", "icon": "toy-brick", "display_order": 11 },
+  { "id": "social-skills-coach", "parent_id": "medical-clinical-therapists", "name": "Social Skills Coach", "slug": "social-skills-coach", "icon": "users", "display_order": 12 },
+  { "id": "family-child-counselor", "parent_id": "medical-clinical-therapists", "name": "Family & Child Counselor", "slug": "family-child-counselor", "icon": "heart-handshake", "display_order": 13 },
+
+  { "id": "special-education-tutor", "parent_id": "academic-school-based-specialists", "name": "Special Education Tutor", "slug": "special-education-tutor", "icon": "graduation-cap", "display_order": 1 },
+  { "id": "dyslexia-reading-specialist", "parent_id": "academic-school-based-specialists", "name": "Dyslexia & Reading Specialist", "slug": "dyslexia-reading-specialist", "icon": "book-open", "display_order": 2, "short_description": "Dyslexia and reading specialists use structured, multisensory methods like Orton-Gillingham and Wilson Reading System to help students who struggle with decoding and fluency. Most start with a diagnostic reading assessment before building an individualized plan.", "meta_description": "Find verified dyslexia and reading specialists in Houston, TX using Orton-Gillingham and Wilson Reading methods." },
+  { "id": "educational-therapist", "parent_id": "academic-school-based-specialists", "name": "Educational Therapist", "slug": "educational-therapist", "icon": "brain-cog", "display_order": 3 },
+  { "id": "assistive-technology-specialist", "parent_id": "academic-school-based-specialists", "name": "Assistive Technology (AT) Specialist", "slug": "assistive-technology-specialist", "icon": "cpu", "display_order": 4 },
+  { "id": "sensory-integration-specialist", "parent_id": "academic-school-based-specialists", "name": "Sensory Integration Specialist", "slug": "sensory-integration-specialist", "icon": "sparkles", "display_order": 5 },
+  { "id": "educational-consultant", "parent_id": "academic-school-based-specialists", "name": "Educational Consultant", "slug": "educational-consultant", "icon": "compass", "display_order": 6 },
+  { "id": "homeschool-consultant-sped", "parent_id": "academic-school-based-specialists", "name": "Homeschool Consultant for Special Education", "slug": "homeschool-consultant-sped", "icon": "home", "display_order": 7 },
+  { "id": "college-transition-disability-services", "parent_id": "academic-school-based-specialists", "name": "College Transition & Disability Services Consultant", "slug": "college-transition-disability-services", "icon": "school", "display_order": 8 },
+
+  { "id": "special-education-advocate", "parent_id": "legal-advocacy-family-support", "name": "Special Education Advocate", "slug": "special-education-advocate", "icon": "shield-check", "display_order": 1 },
+  { "id": "special-education-attorney", "parent_id": "legal-advocacy-family-support", "name": "Special Education Attorney", "slug": "special-education-attorney", "icon": "scale", "display_order": 2 },
+  { "id": "neurodiversity-coach", "parent_id": "legal-advocacy-family-support", "name": "Neurodiversity Coach", "slug": "neurodiversity-coach", "icon": "compass", "display_order": 3 },
+  { "id": "respite-care-provider", "parent_id": "legal-advocacy-family-support", "name": "Respite Care Provider", "slug": "respite-care-provider", "icon": "hand-heart", "display_order": 4 },
+  { "id": "special-needs-legal-financial-planner", "parent_id": "legal-advocacy-family-support", "name": "Special Needs Legal & Financial Planner", "slug": "special-needs-legal-financial-planner", "icon": "landmark", "display_order": 5 },
+
+  { "id": "early-intervention-specialist", "parent_id": "early-intervention-childcare", "name": "Early Intervention Specialist (Birth-3)", "slug": "early-intervention-specialist", "icon": "baby", "display_order": 1 },
+  { "id": "special-needs-daycare-preschool", "parent_id": "early-intervention-childcare", "name": "Special Needs Daycare & Preschool", "slug": "special-needs-daycare-preschool", "icon": "building-2", "display_order": 2 },
+  { "id": "special-needs-caregiver-nanny", "parent_id": "early-intervention-childcare", "name": "Special Needs Caregiver / Nanny", "slug": "special-needs-caregiver-nanny", "icon": "user-heart", "display_order": 3 },
+
+  { "id": "vocational-trainer-job-coach", "parent_id": "adult-transition-services", "name": "Vocational Trainer / Job Coach", "slug": "vocational-trainer-job-coach", "icon": "briefcase", "display_order": 1 },
+  { "id": "life-skills-coach", "parent_id": "adult-transition-services", "name": "Life Skills Coach", "slug": "life-skills-coach", "icon": "list-checks", "display_order": 2 },
+  { "id": "supported-independent-living-provider", "parent_id": "adult-transition-services", "name": "Supported & Independent Living Provider", "slug": "supported-independent-living-provider", "icon": "home", "display_order": 3 },
+  { "id": "adult-day-program", "parent_id": "adult-transition-services", "name": "Adult Day Program", "slug": "adult-day-program", "icon": "sun", "display_order": 4 },
+
+  { "id": "adaptive-sports-program", "parent_id": "recreation-community", "name": "Adaptive Sports Program", "slug": "adaptive-sports-program", "icon": "medal", "display_order": 1 },
+  { "id": "special-needs-camp", "parent_id": "recreation-community", "name": "Special Needs Camp", "slug": "special-needs-camp", "icon": "tent", "display_order": 2 },
+  { "id": "sensory-friendly-event-organizer", "parent_id": "recreation-community", "name": "Sensory-Friendly Event Organizer", "slug": "sensory-friendly-event-organizer", "icon": "party-popper", "display_order": 3 },
+  { "id": "parent-support-group", "parent_id": "recreation-community", "name": "Parent Support Group", "slug": "parent-support-group", "icon": "users-round", "display_order": 4 },
+
+  { "id": "sensory-gym", "parent_id": "facilities-programs", "name": "Sensory Gym", "slug": "sensory-gym", "icon": "dumbbell", "display_order": 1 },
+  { "id": "special-education-private-school", "parent_id": "facilities-programs", "name": "Special Education Private School", "slug": "special-education-private-school", "icon": "school-2", "display_order": 2 },
+  { "id": "multi-disciplinary-therapy-clinic", "parent_id": "facilities-programs", "name": "Multi-Disciplinary Therapy Clinic", "slug": "multi-disciplinary-therapy-clinic", "icon": "building", "display_order": 3 }
+]

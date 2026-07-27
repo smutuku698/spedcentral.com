@@ -1,0 +1,102 @@
+---
+import { Image } from "astro:assets";
+import { Search, Star, TrendingUp, MapPin } from "lucide-react";
+import specialist1 from "@/assets/tutor1.jpg";
+import specialist2 from "@/assets/tutor2.jpg";
+import specialist3 from "@/assets/tutor3.jpg";
+import specialist4 from "@/assets/tutor4.jpg";
+import { getServiceCategoryBySlug, getProductCategoryBySlug } from "@/lib/data";
+
+// A curated "popular searches" pick (editorial choice, same as any real
+// directory's homepage) spanning several specialties and one product
+// category -- names are still pulled from the data files so they can't
+// drift out of sync, even though which slugs appear here is a hand pick.
+const trendingSlugs: { type: "service" | "product"; slug: string }[] = [
+  { type: "service", slug: "speech-language-pathologist" },
+  { type: "service", slug: "occupational-therapist" },
+  { type: "service", slug: "behavioral-therapist-aba" },
+  { type: "service", slug: "dyslexia-reading-specialist" },
+  { type: "service", slug: "special-education-advocate" },
+  { type: "product", slug: "sensory-integration-regulation" },
+];
+
+const trending = trendingSlugs.map(({ type, slug }) => {
+  if (type === "service") {
+    const c = getServiceCategoryBySlug(slug)!;
+    return { name: c.name, href: `/texas/houston/${c.slug}/` };
+  }
+  const g = getProductCategoryBySlug(slug)!;
+  return { name: g.name, href: `/products/${g.slug}/` };
+});
+---
+
+<section class="relative overflow-hidden bg-cream">
+  <div class="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-6 py-16 md:grid-cols-[1fr_2fr_1fr]">
+    <!-- Left diamonds -->
+    <div class="relative hidden h-[420px] md:block">
+      <div class="absolute left-0 top-0 h-24 w-24 rotate-45 bg-brand-orange"></div>
+      <div class="absolute left-16 top-8 h-40 w-40 overflow-hidden rotate-45">
+        <Image src={specialist1} alt="Therapist working one-on-one with a student" loading="eager" class="h-full w-full -rotate-45 scale-150 object-cover" />
+      </div>
+      <div class="absolute -left-4 top-40 h-16 w-16 rotate-45 bg-brand-green"></div>
+      <div class="absolute left-10 top-52 h-36 w-36 overflow-hidden rotate-45">
+        <Image src={specialist3} alt="Specialist reviewing progress with a student" loading="eager" class="h-full w-full -rotate-45 scale-150 object-cover" />
+      </div>
+      <div class="absolute left-40 top-72 h-12 w-12 rotate-45 bg-brand-yellow"></div>
+    </div>
+
+    <!-- Center -->
+    <div class="text-center">
+      <h1 class="text-4xl font-black leading-tight text-brand-dark md:text-5xl">
+        Everything your child needs to <span class="highlight-mark">thrive</span>
+      </h1>
+      <p class="mx-auto mt-4 max-w-xl text-base text-brand-dark/70">
+        Search verified speech, occupational, ABA &amp; reading specialists in Houston — plus products that support
+        learning, communication, and independence at home and school.
+      </p>
+      <form action="/search/" method="get" class="mx-auto mt-8 flex max-w-2xl flex-col overflow-hidden rounded-md border border-border bg-white shadow-sm sm:flex-row">
+        <input name="q" placeholder="Speech therapy, ABA, dyslexia tutoring..." class="w-full px-4 py-3 text-sm outline-none sm:flex-1" />
+        <div class="flex items-center gap-2 border-t border-border px-4 py-3 sm:w-52 sm:border-l sm:border-t-0">
+          <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+          <input name="loc" placeholder="Houston, TX" class="w-full text-sm outline-none" />
+        </div>
+        <button type="submit" class="bg-brand-orange px-5 py-3 text-white hover:opacity-90 sm:py-0" aria-label="Search">
+          <Search className="mx-auto h-5 w-5" />
+        </button>
+      </form>
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+        <span class="flex items-center gap-1 font-semibold text-brand-green"><TrendingUp className="h-3 w-3" /> Popular:</span>
+        {trending.map((t) => (
+          <a href={t.href} class="rounded-full border border-border bg-white px-3 py-1 text-brand-dark hover:border-brand-orange">{t.name}</a>
+        ))}
+      </div>
+      <div class="mt-10 grid grid-cols-1 gap-4 text-sm text-brand-dark sm:grid-cols-3">
+        <div>
+          <div class="flex items-center justify-center gap-1 text-brand-orange"><Star className="h-4 w-4 fill-current" /><Star className="h-4 w-4 fill-current" /></div>
+          Verified reviews from<br /><b>real Houston families</b>
+        </div>
+        <div>
+          <div class="text-brand-orange">◆ ◆</div>
+          <b>Support for every kind of learner</b><br />speech, autism, dyslexia &amp; more
+        </div>
+        <div>
+          <div class="text-brand-orange">◆ ◆</div>
+          Find your right fit with our<br /><b class="text-brand-green">verified provider badge</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right diamonds -->
+    <div class="relative hidden h-[420px] md:block">
+      <div class="absolute right-16 top-0 h-40 w-40 overflow-hidden rotate-45">
+        <Image src={specialist2} alt="Specialist greeting a family" loading="eager" class="h-full w-full -rotate-45 scale-150 object-cover" />
+      </div>
+      <div class="absolute right-0 top-16 h-16 w-16 rotate-45 bg-brand-yellow"></div>
+      <div class="absolute right-40 top-32 h-20 w-20 rotate-45 bg-brand-orange"></div>
+      <div class="absolute right-8 top-56 h-36 w-36 overflow-hidden rotate-45">
+        <Image src={specialist4} alt="Student and family" loading="eager" class="h-full w-full -rotate-45 scale-150 object-cover" />
+      </div>
+      <div class="absolute right-40 top-72 h-16 w-16 rotate-45 bg-brand-green"></div>
+    </div>
+  </div>
+</section>

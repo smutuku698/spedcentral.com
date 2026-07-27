@@ -1,0 +1,185 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import { Star, Download, CheckCircle2 } from "lucide-react";
+import {
+  getPublishedProducts, getProductCategoryBySlug, getProductReviews, getRelatedProducts,
+  getProductCategoryFaqs, getCreatorBySlug,
+} from "@/lib/data";
+import { productIcons } from "@/lib/icons";
+import { breadcrumbJsonLd } from "@/lib/seo";
+
+export function getStaticPaths() {
+  return getPublishedProducts().map((product) => ({ params: { slug: product.slug }, props: { product } }));
+}
+
+const { product } = Astro.props;
+// Products are tagged at the leaf level (e.g. "Digital Downloads &
+// Printables"), but hub pages and FAQ content only exist at the parent
+// group level -- resolve up one level so the breadcrumb link and FAQs
+// point somewhere that actually exists.
+const category = getProductCategoryBySlug(product.category_slugs[0])!;
+const categoryGroup = category.parent_id ? getProductCategoryBySlug(category.parent_id)! : category;
+const reviews = getProductReviews(product.id);
+const related = getRelatedProducts(product);
+const faqs = getProductCategoryFaqs(categoryGroup.slug);
+const creator = product.creator_id ? getCreatorBySlug(product.creator_id) : null;
+const Icon = productIcons[product.image_icon];
+
+const canonicalProductUrl = new URL(`/products/item/${product.slug}/`, Astro.site).toString();
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: product.name,
+  description: product.description,
+  category: category.name,
+  url: canonicalProductUrl,
+  brand: { "@type": "Brand", name: product.brand },
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: product.rating_avg,
+    reviewCount: product.review_count,
+  },
+  offers: {
+    "@type": "Offer",
+    // Affiliate products complete the purchase off-site; digital downloads
+    // are bought directly here -- the offer's url should point wherever
+    // the transaction actually happens.
+    url: product.product_type === "affiliate" ? (product.buy_url ?? canonicalProductUrl) : canonicalProductUrl,
+    price: product.sale_price ?? product.price,
+    priceCurrency: product.currency,
+    availability: "https://schema.org/InStock",
+  },
+};
+
+const breadcrumbs = breadcrumbJsonLd(
+  [
+    { name: "Home", url: "/" },
+    { name: "Products", url: "/products/" },
+    { name: categoryGroup.name, url: `/products/${categoryGroup.slug}/` },
+    { name: product.name, url: `/products/item/${product.slug}/` },
+  ],
+  Astro.site!,
+);
+---
+<Layout title={product.meta_title} description={product.meta_description} ogType="product">
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" is:inline />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbs)} slot="head" is:inline />
+  <meta property="product:price:amount" content={String(product.sale_price ?? product.price)} slot="head" />
+  <meta property="product:price:currency" content={product.currency} slot="head" />
+  <SiteHeader />
+
+  <nav class="border-b border-border bg-white py-3 text-xs text-muted-foreground">
+    <div class="mx-auto max-w-6xl px-6">
+      <a href="/" class="hover:text-brand-orange">Home</a> /
+      <a href="/products/" class="hover:text-brand-orange">Products</a> /
+      <a href={`/products/${categoryGroup.slug}/`} class="hover:text-brand-orange">{categoryGroup.name}</a> /
+      <span class="text-brand-dark">{product.name}</span>
+    </div>
+  </nav>
+
+  <div class="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-6 py-12 lg:grid-cols-[1fr_1.3fr]">
+    <div class={`flex h-72 items-center justify-center rounded-lg ${product.image_tint}`}>
+      {Icon && <Icon className="h-24 w-24 text-brand-dark/60" />}
+    </div>
+
+    <div>
+      <p class="text-sm font-semibold text-brand-green">{category.name}</p>
+      <h1 class="mt-1 text-3xl font-bold text-brand-dark">{product.name}</h1>
+      <p class="mt-1 text-sm text-muted-foreground">
+        by {product.brand}
+        {creator && <> · created by <a href={`/creators/${creator.slug}/`} class="text-brand-orange hover:underline">{creator.name}</a></>}
+      </p>
+      <div class="mt-3 flex items-center gap-1 text-sm text-brand-dark">
+        <Star className="h-4 w-4 fill-brand-orange text-brand-orange" />
+        <span class="font-semibold">{product.rating_avg}</span>
+        <span class="text-muted-foreground">({product.review_count} reviews)</span>
+      </div>
+
+      <div class="mt-4 flex items-baseline gap-2">
+        <span class="text-2xl font-bold text-brand-dark">${(product.sale_price ?? product.price).toFixed(2)}</span>
+        {product.sale_price && <span class="text-muted-foreground line-through">${product.price.toFixed(2)}</span>}
+      </div>
+
+      {product.product_type === "digital_download" ? (
+        <a href="/checkout/" class="mt-5 inline-flex items-center rounded-md bg-brand-orange px-6 py-3 font-semibold text-white hover:opacity-90">
+          <Download className="mr-2 h-4 w-4" /> Get instant download
+        </a>
+      ) : (
+        <a href={product.buy_url ?? "#"} rel="nofollow noopener noreferrer" target="_blank" class="mt-5 inline-flex items-center rounded-md bg-brand-orange px-6 py-3 font-semibold text-white hover:opacity-90">
+          Buy now
+        </a>
+      )}
+
+      <p class="mt-6 leading-relaxed text-brand-dark/80">{product.description}</p>
+
+      {product.key_features?.length > 0 && (
+        <ul class="mt-4 space-y-2">
+          {product.key_features.map((f: string) => (
+            <li class="flex items-start gap-2 text-sm text-brand-dark/80">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-green" /> {f}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-6xl px-6 pb-16">
+    <section>
+      <h2 class="text-xl font-bold text-brand-dark">Reviews ({reviews.length})</h2>
+      <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {reviews.map((r) => (
+          <div class="rounded-lg border border-border p-4">
+            <div class="flex items-center justify-between">
+              <p class="font-semibold text-brand-dark">{r.author_name}</p>
+              <div class="flex items-center gap-1 text-brand-orange">
+                {Array.from({ length: r.rating }).map(() => <Star className="h-3.5 w-3.5 fill-brand-orange text-brand-orange" />)}
+              </div>
+            </div>
+            <p class="mt-2 text-sm text-brand-dark/80">{r.body}</p>
+            <p class="mt-2 text-xs text-muted-foreground">{r.created_at}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {faqs.length > 0 && (
+      <section class="mt-12 max-w-3xl">
+        <h2 class="text-xl font-bold text-brand-dark">Frequently asked questions</h2>
+        <div class="mt-4 space-y-4">
+          {faqs.map((f) => (
+            <div>
+              <p class="font-semibold text-brand-dark">{f.question}</p>
+              <p class="mt-1 text-sm text-brand-dark/80">{f.answer}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {related.length > 0 && (
+      <section class="mt-12">
+        <h2 class="text-xl font-bold text-brand-dark">You might also like</h2>
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {related.map((p) => {
+            const RelIcon = productIcons[p.image_icon];
+            return (
+              <a href={`/products/item/${p.slug}/`} class="rounded-lg border border-border p-4 hover:border-brand-orange">
+                <div class={`flex h-20 items-center justify-center rounded ${p.image_tint}`}>
+                  {RelIcon && <RelIcon className="h-8 w-8 text-brand-dark/60" />}
+                </div>
+                <p class="mt-3 font-bold text-brand-dark">{p.name}</p>
+                <p class="text-sm text-muted-foreground">${p.price.toFixed(2)}</p>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    )}
+  </div>
+
+  <SiteFooter />
+</Layout>

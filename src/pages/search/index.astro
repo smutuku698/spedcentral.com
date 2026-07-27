@@ -1,0 +1,126 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SiteHeader from "@/components/SiteHeader.astro";
+import SiteFooter from "@/components/SiteFooter.astro";
+import { Search as SearchIcon } from "lucide-react";
+import {
+  getPublishedProviders, getPublishedProducts, getAllServiceCategoryLeaves, getProductCategoryGroups,
+  getCityBySlug, getServiceCategoryBySlug,
+} from "@/lib/data";
+
+// Small enough (a few dozen items today) to embed the whole searchable
+// index as static JSON and filter client-side -- no backend needed. Once
+// this is backed by Supabase, this becomes a real query (ilike/full-text)
+// instead, but the page and its URL contract (?q=) stay identical.
+//
+// `keywords` is what's actually matched against -- includes tagline/
+// description/category so a search like "speech" finds a provider whose
+// *name* doesn't contain the word but whose tagline does.
+const searchIndex = [
+  ...getPublishedProviders().map((p) => {
+    const category = getServiceCategoryBySlug(p.category_slugs[0]);
+    return {
+      type: "Provider",
+      name: p.name,
+      subtitle: `${category?.name} · ${getCityBySlug(p.city_slug)?.name}, TX`,
+      url: `/texas/houston/providers/${p.slug}/`,
+      keywords: [p.name, p.tagline, category?.name].filter(Boolean).join(" ").toLowerCase(),
+    };
+  }),
+  ...getPublishedProducts().map((p) => ({
+    type: "Product",
+    name: p.name,
+    subtitle: `by ${p.brand}`,
+    url: `/products/item/${p.slug}/`,
+    keywords: [p.name, p.short_description, p.brand].filter(Boolean).join(" ").toLowerCase(),
+  })),
+  ...getAllServiceCategoryLeaves().map((c) => ({
+    type: "Specialty",
+    name: c.name,
+    subtitle: "Houston, TX",
+    url: `/texas/houston/${c.slug}/`,
+    keywords: [c.name, c.short_description].filter(Boolean).join(" ").toLowerCase(),
+  })),
+  ...getProductCategoryGroups().map((c) => ({
+    type: "Product category",
+    name: c.name,
+    subtitle: "Shop products",
+    keywords: [c.name, c.short_description].filter(Boolean).join(" ").toLowerCase(),
+    url: `/products/${c.slug}/`,
+  })),
+];
+---
+<Layout title="Search | SpedCentral" description="Search SpedCentral for special education providers, specialists, and products.">
+  <SiteHeader />
+
+  <header class="bg-cream py-10">
+    <div class="mx-auto max-w-3xl px-6">
+      <h1 class="text-2xl font-bold text-brand-dark">Search SpedCentral</h1>
+      <form id="search-form" class="mx-auto mt-6 flex overflow-hidden rounded-md border border-border bg-white shadow-sm">
+        <input id="search-input" name="q" placeholder="Speech therapy, ABA, dyslexia tutoring..." class="w-full px-4 py-3 text-sm outline-none" />
+        <button type="submit" class="bg-brand-orange px-5 text-white hover:opacity-90" aria-label="Search">
+          <SearchIcon className="h-5 w-5" />
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <div class="mx-auto max-w-3xl px-6 py-12">
+    <p id="search-summary" class="text-sm text-muted-foreground"></p>
+    <div id="search-results" class="mt-6 space-y-3"></div>
+    <div id="search-empty" class="hidden rounded-lg bg-cream p-6 text-center">
+      <p class="font-semibold text-brand-dark">No matches yet.</p>
+      <p class="mt-2 text-sm text-muted-foreground">
+        Try a broader term, or browse
+        <a href="/texas/houston/" class="text-brand-orange hover:underline">all Houston providers</a>
+        or <a href="/products/" class="text-brand-orange hover:underline">all products</a>.
+      </p>
+    </div>
+  </div>
+
+  <SiteFooter />
+
+  <script type="application/json" id="search-index" set:html={JSON.stringify(searchIndex)} is:inline />
+  <script>
+    const index = JSON.parse(document.getElementById("search-index")!.textContent!);
+    const params = new URLSearchParams(location.search);
+    const input = document.getElementById("search-input") as HTMLInputElement;
+    const summary = document.getElementById("search-summary")!;
+    const results = document.getElementById("search-results")!;
+    const empty = document.getElementById("search-empty")!;
+
+    function render(query: string) {
+      const q = query.trim().toLowerCase();
+      const matches = q ? index.filter((item: any) => item.keywords.includes(q)) : index;
+
+      summary.textContent = q
+        ? `${matches.length} result${matches.length === 1 ? "" : "s"} for "${query}"`
+        : `Browse everything on SpedCentral (${index.length} listings)`;
+
+      results.innerHTML = matches
+        .map(
+          (item: any) => `
+          <a href="${item.url}" class="block rounded-lg border border-border p-4 hover:border-brand-orange">
+            <span class="text-xs font-semibold uppercase tracking-wide text-brand-orange">${item.type}</span>
+            <p class="font-bold text-brand-dark">${item.name}</p>
+            <p class="text-sm text-muted-foreground">${item.subtitle}</p>
+          </a>`,
+        )
+        .join("");
+
+      empty.classList.toggle("hidden", matches.length > 0);
+    }
+
+    const initialQuery = params.get("q") ?? "";
+    input.value = initialQuery;
+    render(initialQuery);
+
+    document.getElementById("search-form")!.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const q = input.value;
+      history.replaceState(null, "", q ? `?q=${encodeURIComponent(q)}` : location.pathname);
+      render(q);
+    });
+    input.addEventListener("input", () => render(input.value));
+  </script>
+</Layout>
