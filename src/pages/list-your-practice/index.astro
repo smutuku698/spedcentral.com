@@ -128,7 +128,7 @@ const missingData = !cities?.length || !allCategories?.length;
       <fieldset class="border-b border-border pb-8">
         <legend class="text-lg font-bold text-brand-dark">Credentials</legend>
         <p class="mt-1 text-xs text-muted-foreground">Check any that apply -- this is what earns the verified badge.</p>
-        <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
           {(credentials ?? []).map((c) => (
             <label class="flex items-center gap-2 text-sm">
               <input type="checkbox" name="credential_ids" value={c.id} /> {c.abbreviation}
@@ -136,7 +136,7 @@ const missingData = !cities?.length || !allCategories?.length;
           ))}
         </div>
 
-        <div class="mt-4 grid grid-cols-2 gap-4">
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label class="block text-sm font-semibold text-brand-dark" for="license_number">License number</label>
             <input id="license_number" name="license_number" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="e.g. TX-SLP-12345" />
@@ -159,7 +159,7 @@ const missingData = !cities?.length || !allCategories?.length;
         <label class="mt-4 block text-sm font-semibold text-brand-dark" for="email">Public contact email *</label>
         <input id="email" name="email" type="email" required class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="hello@yourpractice.com" />
 
-        <div class="mt-4 grid grid-cols-2 gap-4">
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label class="block text-sm font-semibold text-brand-dark" for="phone">Phone</label>
             <input id="phone" name="phone" type="tel" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="(281) 555-0139" />
@@ -172,12 +172,12 @@ const missingData = !cities?.length || !allCategories?.length;
 
         <details class="mt-4">
           <summary class="cursor-pointer text-sm font-semibold text-brand-orange">+ Social &amp; video links (optional)</summary>
-          <div class="mt-3 grid grid-cols-2 gap-4">
+          <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <input name="social_facebook_url" type="url" placeholder="Facebook URL" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
             <input name="social_instagram_url" type="url" placeholder="Instagram URL" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
             <input name="social_linkedin_url" type="url" placeholder="LinkedIn URL" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
             <input name="social_youtube_url" type="url" placeholder="YouTube URL" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
-            <input name="intro_video_url" type="url" placeholder="Intro video URL" class="col-span-2 rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
+            <input name="intro_video_url" type="url" placeholder="Intro video URL" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange sm:col-span-2" />
           </div>
         </details>
       </fieldset>
@@ -192,7 +192,7 @@ const missingData = !cities?.length || !allCategories?.length;
           {(cities ?? []).map((c) => <option value={c.id}>{c.name}{c.is_metro_hub ? " (Houston)" : ""}</option>)}
         </select>
 
-        <div class="mt-4 grid grid-cols-2 gap-4">
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <input name="address_line1" placeholder="Address line 1" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
           <input name="address_line2" placeholder="Address line 2" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
           <input name="postal_code" placeholder="ZIP code" class="rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" />
@@ -211,7 +211,7 @@ const missingData = !cities?.length || !allCategories?.length;
           {categoryGroups.map((group) => (
             <div>
               <p class="text-sm font-semibold text-brand-dark">{group.name}</p>
-              <div class="mt-1 grid grid-cols-2 gap-1 sm:grid-cols-3">
+              <div class="mt-1 grid grid-cols-1 gap-1 sm:grid-cols-2 md:grid-cols-3">
                 {categoryChildren(group.id).map((c) => (
                   <label class="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="category_ids" value={c.id} /> {c.name}
@@ -228,7 +228,7 @@ const missingData = !cities?.length || !allCategories?.length;
         <legend class="text-lg font-bold text-brand-dark">Who you work with</legend>
 
         <p class="mt-4 text-sm font-semibold text-brand-dark">Age groups</p>
-        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
           {(ageGroups ?? []).map((a) => (
             <label class="flex items-center gap-2 text-sm">
               <input type="checkbox" name="age_group_ids" value={a.id} /> {a.name}
@@ -237,7 +237,7 @@ const missingData = !cities?.length || !allCategories?.length;
         </div>
 
         <p class="mt-4 text-sm font-semibold text-brand-dark">Languages spoken</p>
-        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
           {(languages ?? []).map((l) => (
             <label class="flex items-center gap-2 text-sm">
               <input type="checkbox" name="language_ids" value={l.id} /> {l.name}
@@ -250,7 +250,7 @@ const missingData = !cities?.length || !allCategories?.length;
       <fieldset class="border-b border-border pb-8">
         <legend class="text-lg font-bold text-brand-dark">Pricing &amp; payment</legend>
 
-        <div class="mt-4 grid grid-cols-3 gap-4">
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label class="block text-sm font-semibold text-brand-dark" for="price_min">Price from ($)</label>
             <input id="price_min" name="price_min" type="number" min="0" step="0.01" class="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-orange" placeholder="80" />
@@ -268,7 +268,7 @@ const missingData = !cities?.length || !allCategories?.length;
         </div>
 
         <p class="mt-4 text-sm font-semibold text-brand-dark">Payment methods accepted</p>
-        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
           {PAYMENT_METHODS.map(([value, label]) => (
             <label class="flex items-center gap-2 text-sm">
               <input type="checkbox" name="payment_methods" value={value} /> {label}
@@ -277,7 +277,7 @@ const missingData = !cities?.length || !allCategories?.length;
         </div>
 
         <p class="mt-4 text-sm font-semibold text-brand-dark">Insurance accepted</p>
-        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
           {(insurances ?? []).map((i) => (
             <label class="flex items-center gap-2 text-sm">
               <input type="checkbox" name="insurance_ids" value={i.id} /> {i.name}

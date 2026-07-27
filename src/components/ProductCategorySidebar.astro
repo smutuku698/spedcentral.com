@@ -1,0 +1,67 @@
+---
+// Always shows all 9 groups, even ones with zero products yet -- the whole
+// point is letting users see the full breadth of what's planned here, not
+// just what's populated so far (unlike the provider-category pages, which
+// hide empty categories entirely to avoid thin-content pages).
+//
+// Two renderings of the same data: a full vertical list on desktop (lg+),
+// and a horizontal scrolling pill row on mobile -- a 10-item vertical list
+// would otherwise sit above the fold and push every product down past a
+// full phone screen before a visitor sees anything.
+import { getProductCategoryGroups, getProductsByCategory } from "@/lib/data";
+
+interface Props {
+  activeSlug?: string;
+}
+const { activeSlug } = Astro.props;
+
+const groups = await Promise.all(
+  (await getProductCategoryGroups()).map(async (g) => ({
+    ...g,
+    productCount: (await getProductsByCategory(g.slug)).length,
+  })),
+);
+---
+<!-- Mobile: horizontal scrolling pills -->
+<div class="mb-6 -mx-6 overflow-x-auto px-6 lg:hidden">
+  <div class="flex gap-2 pb-1">
+    <a
+      href="/products/"
+      class={`flex-shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${!activeSlug ? "border-brand-orange bg-brand-orange/10 text-brand-orange" : "border-border text-brand-dark/80"}`}
+    >
+      All Products
+    </a>
+    {groups.map((g) => (
+      <a
+        href={`/products/${g.slug}/`}
+        class={`flex-shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold ${activeSlug === g.slug ? "border-brand-orange bg-brand-orange/10 text-brand-orange" : "border-border text-brand-dark/80"}`}
+      >
+        {g.name}{g.productCount > 0 ? ` (${g.productCount})` : ""}
+      </a>
+    ))}
+  </div>
+</div>
+
+<!-- Desktop: vertical sidebar -->
+<aside class="hidden lg:block lg:w-64 lg:flex-shrink-0">
+  <div class="lg:sticky lg:top-6">
+    <h2 class="text-sm font-bold uppercase tracking-wide text-brand-dark">Shop by Category</h2>
+    <nav class="mt-4 space-y-1">
+      <a
+        href="/products/"
+        class={`block rounded-md px-3 py-2 text-sm font-semibold ${!activeSlug ? "bg-brand-orange/10 text-brand-orange" : "text-brand-dark/80 hover:bg-cream hover:text-brand-orange"}`}
+      >
+        All Products
+      </a>
+      {groups.map((g) => (
+        <a
+          href={`/products/${g.slug}/`}
+          class={`flex items-center justify-between rounded-md px-3 py-2 text-sm ${activeSlug === g.slug ? "bg-brand-orange/10 font-semibold text-brand-orange" : "text-brand-dark/80 hover:bg-cream hover:text-brand-orange"}`}
+        >
+          <span>{g.name}</span>
+          <span class="text-xs text-muted-foreground">{g.productCount || "—"}</span>
+        </a>
+      ))}
+    </nav>
+  </div>
+</aside>

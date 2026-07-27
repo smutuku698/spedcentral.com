@@ -2,16 +2,15 @@
 import Layout from "@/layouts/Layout.astro";
 import SiteHeader from "@/components/SiteHeader.astro";
 import SiteFooter from "@/components/SiteFooter.astro";
+import ProductCard from "@/components/ProductCard.astro";
+import ProductCategorySidebar from "@/components/ProductCategorySidebar.astro";
 import { ArrowRight } from "lucide-react";
-import { getActiveProductCategoryGroups, getProductsByCategory } from "@/lib/data";
-import { productIcons, iconKeyFromSlug } from "@/lib/icons";
+import { getPublishedProducts, getProductCategoryBySlug } from "@/lib/data";
 import { breadcrumbJsonLd } from "@/lib/seo";
 
-const groups = await Promise.all(
-  (await getActiveProductCategoryGroups()).map(async (g) => ({
-    ...g,
-    productCount: (await getProductsByCategory(g.slug)).length,
-  })),
+const products = await getPublishedProducts();
+const productCards = await Promise.all(
+  products.map(async (p) => ({ p, category: await getProductCategoryBySlug(p.category_slugs[0]) })),
 );
 
 const breadcrumbs = breadcrumbJsonLd([{ name: "Home", url: "/" }, { name: "Products", url: "/products/" }], Astro.site!);
@@ -24,14 +23,14 @@ const breadcrumbs = breadcrumbJsonLd([{ name: "Home", url: "/" }, { name: "Produ
   <SiteHeader />
 
   <nav class="border-b border-border bg-white py-3 text-xs text-muted-foreground">
-    <div class="mx-auto max-w-6xl px-6">
+    <div class="mx-auto max-w-7xl px-6">
       <a href="/" class="hover:text-brand-orange">Home</a> /
       <span class="text-brand-dark">Products</span>
     </div>
   </nav>
 
   <header class="bg-cream py-12">
-    <div class="mx-auto max-w-6xl px-6">
+    <div class="mx-auto max-w-7xl px-6">
       <h1 class="text-3xl font-bold text-brand-dark md:text-4xl">Tools &amp; Products for Every Learner</h1>
       <p class="mt-4 max-w-3xl text-brand-dark/80">
         Sensory tools, assistive technology, adaptive classroom supplies, and daily-living aids -- picked for real
@@ -40,24 +39,19 @@ const breadcrumbs = breadcrumbJsonLd([{ name: "Home", url: "/" }, { name: "Produ
     </div>
   </header>
 
-  <div class="mx-auto max-w-6xl px-6 py-12">
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {groups.map((g) => {
-        const Icon = productIcons[iconKeyFromSlug(g.icon ?? "")];
-        return (
-          <a href={`/products/${g.slug}/`} class="rounded-lg border border-border bg-white p-6 hover:border-brand-orange">
-            {Icon && <Icon className="h-8 w-8 text-brand-orange" />}
-            <h2 class="mt-3 font-bold text-brand-dark">{g.name}</h2>
-            <p class="mt-1 text-sm text-muted-foreground">{g.productCount} {g.productCount === 1 ? "product" : "products"}</p>
-            <p class="mt-3 flex items-center gap-1 text-sm font-semibold text-brand-orange">
-              Browse <ArrowRight className="h-3.5 w-3.5" />
-            </p>
-          </a>
-        );
-      })}
-    </div>
+  <div class="mx-auto max-w-7xl px-6 py-12 lg:flex lg:items-start lg:gap-10">
+    <ProductCategorySidebar />
 
-    <div class="mt-16 rounded-lg bg-cream p-8 text-center">
+    <div class="flex-1">
+      <p class="text-sm text-muted-foreground">{products.length} {products.length === 1 ? "product" : "products"}</p>
+      <div class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {productCards.map(({ p, category }) => <ProductCard product={p} category={category} />)}
+      </div>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-6 pb-16">
+    <div class="rounded-lg bg-cream p-8 text-center">
       <h2 class="text-xl font-bold text-brand-dark">Make something families need?</h2>
       <p class="mt-2 text-sm text-muted-foreground">List an affiliate product or sell your own printables and digital resources on SpedCentral.</p>
       <a href="/sell-your-products/" class="mt-4 inline-flex items-center rounded-md bg-brand-orange px-6 py-2.5 font-semibold text-white hover:opacity-90">
