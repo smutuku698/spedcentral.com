@@ -89,10 +89,19 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
     // JPEG at quality 80 reliably shrinks real photos while staying visually
     // clean, so that's the actual "best format for loading" choice here
     // given what this library can do.
-    outputBytes = final.get_bytes_jpeg(80);
-    contentType = "image/jpeg";
-    extension = "jpg";
+    const reencoded = final.get_bytes_jpeg(80);
     final.free();
+
+    // Only use the re-encoded version if it's actually smaller. A phone
+    // photo (several MB, well over MAX_OUTPUT_WIDTH) always shrinks a lot
+    // here; a small image that's already well-compressed sometimes doesn't
+    // -- Photon's encoder isn't as efficient as whatever made the original.
+    // Either way, this upload should never come out bigger than it went in.
+    if (reencoded.byteLength < inputBytes.byteLength) {
+      outputBytes = reencoded;
+      contentType = "image/jpeg";
+      extension = "jpg";
+    }
   } catch {
     // keep original bytes/contentType/extension set above
   }
