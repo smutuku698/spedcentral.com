@@ -1,17 +1,14 @@
-// Cloudflare Pages Function -- handles image uploads for both provider
-// listings (from list-your-practice) and, later, product images. Runs
-// server-side in the Workers runtime so it can hold the R2 binding directly
-// (no S3-style API keys needed at all -- Cloudflare authenticates the
-// binding itself, scoped to this Pages project).
+// This site deploys as a Cloudflare Worker with static assets (not classic
+// Cloudflare Pages) -- see wrangler.toml's `run_worker_first: ["/api/*"]`.
+// That means this script only ever runs for /api/* requests; every other
+// path (every Astro page, the custom 404) is served directly from the
+// `./dist` build by Cloudflare's static asset handler and never reaches
+// this file at all.
 //
-// Requires an R2 bucket bound to this Pages project as `MEDIA_BUCKET`
-// (Pages project -> Settings -> Functions -> R2 bucket bindings, set for
-// both Production and Preview).
-//
-// Resizes + re-encodes to WebP at upload time (not build time) because
-// these files land in the bucket after the site is already built and
-// deployed -- Astro's own image pipeline (astro:assets) only ever sees
-// images that exist in the repo at build time, so it can't touch these.
+// Handles image uploads for both provider listings (list-your-practice)
+// and, later, product images. Runs server-side so it can hold the R2
+// binding directly -- no S3-style API keys needed, Cloudflare authenticates
+// the binding itself, scoped to this Worker.
 import { PhotonImage, SamplingFilter, resize } from "@cf-wasm/photon/workerd";
 
 interface Env {
@@ -42,7 +39,9 @@ function jsonError(message: string, status: number): Response {
   });
 }
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+async function handleUpload(request: Request, env: Env): Promise<Response> {
+  if (request.method !== "POST") return jsonError("Method not allowed", 405);
+
   let form: FormData;
   try {
     form = await request.formData();
@@ -102,4 +101,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   return new Response(JSON.stringify({ key }), {
     headers: { "Content-Type": "application/json" },
   });
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/api/upload") return handleUpload(request, env);
+
+    return jsonError("Not found", 404);
+  },
 };

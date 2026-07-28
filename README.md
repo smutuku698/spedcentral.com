@@ -7,7 +7,8 @@ launching in Houston, TX, built to expand nationwide.
 
 - **Astro + Tailwind CSS** — static-first for speed and SEO, deployed on Cloudflare Pages
 - **Supabase (Postgres)** — providers, products, categories, reviews (see `supabase/`)
-- **Cloudflare R2** — provider photos, logos, product images, via a Pages Function (`functions/api/upload.ts`)
+- **Cloudflare R2** — provider photos, logos, product images, via a small Worker route (`worker/index.ts`)
+- Deployed as a **Cloudflare Worker with static assets** (Workers Builds, Git-connected) -- not classic Cloudflare Pages; see `wrangler.toml`
 - Editorial content (guides, IEP help) lives as Astro content collections, not the database
 
 ## Development
@@ -32,15 +33,15 @@ Run these in the Supabase SQL editor, in order, when setting up a new project:
 
 ## Image uploads (Cloudflare R2)
 
-Provider photos/logos (and later, product images) upload through `functions/api/upload.ts`, a Cloudflare Pages Function. It resizes to a max 1600px width and re-encodes to WebP before writing to R2 — this happens at *upload* time, not build time, since these files don't exist yet when Astro builds the static site.
+This site deploys as a **Cloudflare Worker with static assets** (Workers Builds, connected to GitHub) — not classic Cloudflare Pages. `wrangler.toml` is what defines that: `[assets]` serves the Astro `dist/` build directly for every route, except `run_worker_first = ["/api/*"]`, which sends only `/api/*` requests to `worker/index.ts` instead. That script handles provider photo/logo (and later, product image) uploads: resizes to a max 1600px width and re-encodes to WebP before writing to R2 — this happens at *upload* time, not build time, since these files don't exist yet when Astro builds the static site.
 
 One-time setup, in the Cloudflare dashboard:
 
-1. R2 → Create bucket.
-2. Pages project → Settings → Functions → R2 bucket bindings → add a binding named exactly `MEDIA_BUCKET` pointing at that bucket, for both Production and Preview.
-3. Bucket → Settings → Public access → enable the `r2.dev` URL or connect a custom subdomain (e.g. `media.yourdomain.com`). Put that URL in `PUBLIC_R2_BASE_URL` (see `.env.example`).
+1. R2 → Create bucket (this repo's `wrangler.toml` assumes it's named `spedcentral-media` — rename there if yours differs).
+2. Bucket → Settings → Public access → enable the `r2.dev` URL or connect a custom subdomain (e.g. `media.yourdomain.com`). Put that URL in `PUBLIC_R2_BASE_URL` (see `.env.example`).
+3. That's it for bindings — `wrangler.toml`'s `[[r2_buckets]]` block declares the `MEDIA_BUCKET` binding in code, so it deploys automatically with the Worker rather than needing to be clicked together by hand in the dashboard.
 
-No API keys/secrets are needed for the upload function itself — the R2 binding is how Cloudflare authenticates it, scoped to this Pages project. `PUBLIC_R2_BASE_URL` is only used for *reading* images back (building `<img src>` from the object key stored in `photo_url`/`logo_url`/`image_url`).
+No API keys/secrets are needed for the upload route itself — the R2 binding is how Cloudflare authenticates it, scoped to this Worker. `PUBLIC_R2_BASE_URL` is only used for *reading* images back (building `<img src>` from the object key stored in `photo_url`/`logo_url`/`image_url`).
 
 Object keys follow `{entityType}/{slug}/{slot}.webp` — e.g. `providers/thrive-speech-therapy/hero.webp`, `providers/thrive-speech-therapy/gallery-0.webp` — kept human-readable and keyword-bearing on purpose (image-filename SEO, easier to eyeball in the R2 dashboard) rather than a random hash.
 

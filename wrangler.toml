@@ -1,0 +1,15 @@
+name = "spedcentral-com"
+main = "worker/index.ts"
+compatibility_date = "2026-07-27"
+
+# Only /api/* requests are routed to worker/index.ts -- every Astro page
+# (and the custom 404) is served directly from ./dist by Cloudflare's
+# static asset handler and never touches the Worker script at all.
+[assets]
+directory = "./dist"
+not_found_handling = "404-page"
+run_worker_first = ["/api/*"]
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "spedcentral-media"

@@ -1,7 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "venture-vista-43", "functions"],
+  "exclude": ["dist", "venture-vista-43", "worker"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
