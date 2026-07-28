@@ -8,7 +8,7 @@ import {
   getServiceCategoryBySlug, getProvidersByCategoryInMetro, getServiceCategoryFaqs, getCityBySlug,
   getActiveServiceCategories,
 } from "@/lib/data";
-import { resolveAssetImage } from "@/lib/images";
+import { resolveAssetImage, resolveR2Image } from "@/lib/images";
 import { breadcrumbJsonLd, itemListJsonLd } from "@/lib/seo";
 
 // Only categories with at least one real provider get a page -- an empty
@@ -80,10 +80,12 @@ const providerList = itemListJsonLd(
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {providerCards.map(({ p, city }) => {
         const photo = resolveAssetImage(p.photo_file);
+        const r2Photo = !photo ? resolveR2Image(p.photo_file) : null;
         return (
           <a href={`/texas/houston/providers/${p.slug}/`} class="group overflow-hidden rounded-lg border border-border bg-white shadow-sm transition hover:shadow-md">
             <div class="relative h-40 w-full overflow-hidden bg-cream">
               {photo && <Image src={photo} alt={p.name} class="h-full w-full object-cover" />}
+              {r2Photo && <img src={r2Photo} alt={p.name} loading="lazy" class="h-full w-full object-cover" />}
               {p.is_featured && (
                 <span class="absolute left-3 top-3 rounded border border-black/10 bg-white/95 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   Sponsored

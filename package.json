@@ -13,6 +13,7 @@
   "dependencies": {
     "@astrojs/react": "^4.2.0",
     "@astrojs/sitemap": "^3.2.1",
+    "@cf-wasm/photon": "^0.3.7",
     "@supabase/supabase-js": "^2.47.10",
     "@tailwindcss/vite": "^4.2.1",
     "astro": "^5.1.5",

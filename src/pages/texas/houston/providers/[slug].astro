@@ -12,7 +12,7 @@ import {
   getCredentialsBySlugs, getLanguagesBySlugs, getInsurancesBySlugs, getAgeGroupsBySlugs,
   getProviderReviews, getRelatedProviders, getServiceCategoryFaqs, formatHours,
 } from "@/lib/data";
-import { resolveAssetImage } from "@/lib/images";
+import { resolveAssetImage, resolveR2Image } from "@/lib/images";
 import { breadcrumbJsonLd, schemaTypeForGroup, openingHoursSpecification } from "@/lib/seo";
 
 export async function getStaticPaths() {
@@ -35,6 +35,8 @@ const related = await Promise.all(
 const faqs = getServiceCategoryFaqs(category.slug);
 const hours = formatHours(provider.hours);
 const photo = resolveAssetImage(provider.photo_file);
+const r2Photo = !photo ? resolveR2Image(provider.photo_file) : null;
+const photoSrc = photo?.src ?? r2Photo ?? undefined;
 
 const priceLabel = provider.price_unit === "contact_for_pricing"
   ? "Contact for pricing"
@@ -54,7 +56,7 @@ const jsonLd = {
   "@type": schemaTypeForGroup(category.parent_id),
   name: provider.name,
   description: provider.tagline,
-  image: photo ? new URL(photo.src, Astro.site).toString() : undefined,
+  image: photoSrc ? new URL(photoSrc, Astro.site).toString() : undefined,
   telephone: provider.phone,
   email: provider.email,
   url: provider.website_url,
@@ -93,7 +95,7 @@ const breadcrumbs = breadcrumbJsonLd(
 <Layout
   title={provider.meta_title}
   description={provider.meta_description}
-  ogImage={photo?.src}
+  ogImage={photoSrc}
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" is:inline />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbs)} slot="head" is:inline />
@@ -112,6 +114,7 @@ const breadcrumbs = breadcrumbJsonLd(
     <div class="mx-auto flex max-w-6xl flex-col gap-6 px-6 sm:flex-row">
       <div class="h-32 w-32 flex-shrink-0 overflow-hidden rounded-lg bg-white sm:h-40 sm:w-40">
         {photo && <Image src={photo} alt={provider.name} loading="eager" fetchpriority="high" class="h-full w-full object-cover" />}
+        {r2Photo && <img src={r2Photo} alt={provider.name} loading="eager" fetchpriority="high" class="h-full w-full object-cover" />}
       </div>
       <div class="flex-1">
         <div class="flex flex-wrap items-center gap-2">

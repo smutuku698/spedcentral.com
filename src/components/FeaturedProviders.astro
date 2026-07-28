@@ -6,7 +6,7 @@
 import { Star, MapPin } from "lucide-react";
 import { Image } from "astro:assets";
 import { getFeaturedProviders, getCityBySlug, getServiceCategoryBySlug } from "@/lib/data";
-import { resolveAssetImage } from "@/lib/images";
+import { resolveAssetImage, resolveR2Image } from "@/lib/images";
 
 const featured = await Promise.all(
   (await getFeaturedProviders(3)).map(async (p) => ({
@@ -33,11 +33,13 @@ const accents = ["bg-brand-orange", "bg-brand-purple", "bg-brand-green", "bg-bra
     <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {featured.map(({ p, city, category }, i) => {
         const photo = resolveAssetImage(p.photo_file);
+        const r2Photo = !photo ? resolveR2Image(p.photo_file) : null;
         return (
           <a href={`/texas/houston/providers/${p.slug}/`} class="group overflow-hidden rounded-lg border border-border bg-white shadow-sm transition hover:shadow-md">
             <div class={`h-[3px] w-full ${accents[i % accents.length]}`}></div>
             <div class="relative h-40 w-full overflow-hidden bg-cream">
               {photo && <Image src={photo} alt={p.name} class="h-full w-full object-cover" />}
+              {r2Photo && <img src={r2Photo} alt={p.name} loading="lazy" class="h-full w-full object-cover" />}
               <span class="absolute left-3 top-3 rounded border border-black/10 bg-white/95 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Sponsored
               </span>

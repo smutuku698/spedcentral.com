@@ -7,7 +7,7 @@ launching in Houston, TX, built to expand nationwide.
 
 - **Astro + Tailwind CSS** — static-first for speed and SEO, deployed on Cloudflare Pages
 - **Supabase (Postgres)** — providers, products, categories, reviews (see `supabase/`)
-- **Cloudflare R2** — provider photos, logos, product images (not yet wired up)
+- **Cloudflare R2** — provider photos, logos, product images, via a Pages Function (`functions/api/upload.ts`)
 - Editorial content (guides, IEP help) lives as Astro content collections, not the database
 
 ## Development
@@ -30,6 +30,20 @@ Run these in the Supabase SQL editor, in order, when setting up a new project:
 
 `supabase/db-reference.json` is a plain-language data dictionary of every table/column — useful when working on the DB without re-reading `schema.sql` line by line.
 
+## Image uploads (Cloudflare R2)
+
+Provider photos/logos (and later, product images) upload through `functions/api/upload.ts`, a Cloudflare Pages Function. It resizes to a max 1600px width and re-encodes to WebP before writing to R2 — this happens at *upload* time, not build time, since these files don't exist yet when Astro builds the static site.
+
+One-time setup, in the Cloudflare dashboard:
+
+1. R2 → Create bucket.
+2. Pages project → Settings → Functions → R2 bucket bindings → add a binding named exactly `MEDIA_BUCKET` pointing at that bucket, for both Production and Preview.
+3. Bucket → Settings → Public access → enable the `r2.dev` URL or connect a custom subdomain (e.g. `media.yourdomain.com`). Put that URL in `PUBLIC_R2_BASE_URL` (see `.env.example`).
+
+No API keys/secrets are needed for the upload function itself — the R2 binding is how Cloudflare authenticates it, scoped to this Pages project. `PUBLIC_R2_BASE_URL` is only used for *reading* images back (building `<img src>` from the object key stored in `photo_url`/`logo_url`/`image_url`).
+
+Object keys follow `{entityType}/{slug}/{slot}.webp` — e.g. `providers/thrive-speech-therapy/hero.webp`, `providers/thrive-speech-therapy/gallery-0.webp` — kept human-readable and keyword-bearing on purpose (image-filename SEO, easier to eyeball in the R2 dashboard) rather than a random hash.
+
 ## Project structure
 
 ```
@@ -50,12 +64,14 @@ Every table uses `gen_random_uuid()`, which mints a random, unique ID for
 each row — not a counted-up sequence. That randomness is what makes it safe
 to generate the ID *before* anything is saved: when the "Add my listing"
 form is submitted, the app generates the row's UUID itself (client-side)
-before touching the database at all. That same ID is then used for two
-things simultaneously — the folder a provider's photos get uploaded to in
-R2 (`providers/{id}/hero.jpg`) and the `id` the profile row gets saved
-with. Since both are stamped with the identical ID from the start, there's
-no "did the image get attached to the right profile?" question to worry
-about later.
+before touching the database at all. The same client-side moment also
+computes the row's `slug` (needed either way, since `slug` is `not null
+unique` on `providers`/`products`) — and that slug, not the UUID, is what
+keys the R2 upload path (`providers/{slug}/hero.webp`), so image filenames
+stay human-readable instead of opaque. Photos upload (and get their keys
+back) *before* the provider row insert fires, so `photo_url`/`logo_url` are
+set in that same insert — no separate "attach the image after the fact"
+step or update.
 
 ### Product category taxonomy (9 groups)
 
