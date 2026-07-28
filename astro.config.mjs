@@ -3,6 +3,8 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
+import cloudflare from "@astrojs/cloudflare";
+
 // Fully static for now -- every page below is prerendered at build time, so
 // no platform-specific adapter is needed (Cloudflare Pages, or any static
 // host, just serves the dist/ output directly). Once state/city/category
@@ -14,7 +16,10 @@ export default defineConfig({
   site: "https://spedcentral.com",
   output: "static",
   integrations: [react(), sitemap()],
+
   vite: {
     plugins: [tailwindcss()],
   },
+
+  adapter: cloudflare()
 });
