@@ -83,9 +83,15 @@ async function handleUpload(request: Request, env: Env): Promise<Response> {
       decoded.free();
     }
 
-    outputBytes = final.get_bytes_webp();
-    contentType = "image/webp";
-    extension = "webp";
+    // Not get_bytes_webp(): Photon's WebP encoder is lossless-only (no
+    // quality control), which produces files several times LARGER than a
+    // compressed JPEG for photos -- the opposite of what this step is for.
+    // JPEG at quality 80 reliably shrinks real photos while staying visually
+    // clean, so that's the actual "best format for loading" choice here
+    // given what this library can do.
+    outputBytes = final.get_bytes_jpeg(80);
+    contentType = "image/jpeg";
+    extension = "jpg";
     final.free();
   } catch {
     // keep original bytes/contentType/extension set above
